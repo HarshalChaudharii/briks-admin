@@ -1,12 +1,6 @@
 import { Layout } from '@/components/custom/layout'
 import { Button } from '@/components/custom/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Search } from '@/components/search'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ThemeSwitch from '@/components/theme-switch'
@@ -15,14 +9,65 @@ import { UserNav } from '@/components/user-nav'
 import { RecentSales } from './components/recent-sales'
 import { Overview } from './components/overview'
 
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { Badge } from '@/components/ui/badge'
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { FolderSync, RefreshCcw } from 'lucide-react'
+import moment from 'moment'
+import { publicGetRequest, publicPostRequest } from '@/api/apiFunctions'
+import { SYNC_DATA } from '@/api/apiUrl'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
+
+const columns = [
+  { name: 'ID', uid: 'id' },
+  { name: 'SYNC TYPE', uid: 'syncType' },
+  { name: 'LOG', uid: 'message' },
+  { name: 'STATUS', uid: 'status' },
+  { name: 'SYNCED AT', uid: 'createdAt' },
+]
+
 export default function Dashboard() {
+  // const navigate = useNavigate()
+  // navigate('/sign-in-2')
+  const { data, isSuccess, refetch } = useQuery({
+    queryKey: ['get-sync-logs'],
+    queryFn: async () => {
+      const response = await publicGetRequest(SYNC_DATA)
+      return response.data.data
+    },
+  })
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      const response = await publicPostRequest(SYNC_DATA, {}, {})
+      return response
+    },
+
+    onSuccess: () => {
+      toast.success('Data Synced Successfully')
+    },
+
+    onSettled: () => {
+      refetch()
+    },
+  })
+
   return (
     <Layout>
       {/* ===== Top Heading ===== */}
       <Layout.Header>
-        <TopNav links={topNav} />
+        {/* <TopNav links={topNav} /> */}
         <div className='ml-auto flex items-center space-x-4'>
-          <Search />
+          {/* <Search /> */}
           <ThemeSwitch />
           <UserNav />
         </div>
@@ -33,10 +78,13 @@ export default function Dashboard() {
         <div className='mb-2 flex items-center justify-between space-y-2'>
           <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
           <div className='flex items-center space-x-2'>
-            <Button>Download</Button>
+            {/* <Button>Download</Button> */}
+            <Button className=' px-5' isLoading={isPending} onClick={mutate}>
+              <RefreshCcw className='mr-2' size='20' /> Sync Data
+            </Button>
           </div>
         </div>
-        <Tabs
+        {/* <Tabs
           orientation='vertical'
           defaultValue='overview'
           className='space-y-4'
@@ -175,31 +223,74 @@ export default function Dashboard() {
               </Card>
             </div>
           </TabsContent>
-        </Tabs>
+        </Tabs> */}
+        <div className='flex flex-col gap-4'>
+          <div className='flex w-full items-center gap-4'></div>
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {columns.map((column) => (
+                    <TableHead key={column.uid} className='cursor-pointer'>
+                      {column.name}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isSuccess &&
+                  data.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.syncType}</TableCell>
+                      <TableCell className='w-[50%]  whitespace-pre-wrap'>
+                        {item.message}
+                      </TableCell>
+
+                      <TableCell>
+                        <Badge
+                          className={cn({
+                            'bg-green-500': item.status === 'SUCCESS',
+                            'bg-red-500': item.status === 'FAILED',
+                            'bg-yellow-500': item.status === 'ONGOING',
+                          })}
+                        >
+                          {item.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {moment(item.createdAt).format('DD MMM YYYY hh:mm A')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
       </Layout.Body>
     </Layout>
   )
 }
 
-const topNav = [
-  {
-    title: 'Overview',
-    href: 'dashboard/overview',
-    isActive: true,
-  },
-  {
-    title: 'Customers',
-    href: 'dashboard/customers',
-    isActive: false,
-  },
-  {
-    title: 'Products',
-    href: 'dashboard/products',
-    isActive: false,
-  },
-  {
-    title: 'Settings',
-    href: 'dashboard/settings',
-    isActive: false,
-  },
-]
+// const topNav = [
+//   {
+//     title: 'Overview',
+//     href: 'dashboard/overview',
+//     isActive: true,
+//   },
+//   {
+//     title: 'Customers',
+//     href: 'dashboard/customers',
+//     isActive: false,
+//   },
+//   {
+//     title: 'Products',
+//     href: 'dashboard/products',
+//     isActive: false,
+//   },
+//   {
+//     title: 'Settings',
+//     href: 'dashboard/settings',
+//     isActive: false,
+//   },
+// ]

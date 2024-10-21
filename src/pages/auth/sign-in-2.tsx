@@ -19,7 +19,7 @@ export default function SignIn2() {
             >
               <path d='M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3' />
             </svg>
-            <h1 className='text-xl font-medium'>Shadcn Admin</h1>
+            <h1 className='text-xl font-medium'>Bricks Admin</h1>
           </div>
           <Card className='p-6'>
             <div className='flex flex-col space-y-2 text-left'>
@@ -30,7 +30,7 @@ export default function SignIn2() {
               </p>
             </div>
             <UserAuthForm />
-            <p className='mt-4 px-8 text-center text-sm text-muted-foreground'>
+            {/* <p className='mt-4 px-8 text-center text-sm text-muted-foreground'>
               By clicking login, you agree to our{' '}
               <a
                 href='/terms'
@@ -46,7 +46,7 @@ export default function SignIn2() {
                 Privacy Policy
               </a>
               .
-            </p>
+            </p> */}
           </Card>
         </div>
       </div>

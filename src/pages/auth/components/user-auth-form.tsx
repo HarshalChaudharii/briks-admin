@@ -16,39 +16,60 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/custom/button'
 import { PasswordInput } from '@/components/custom/password-input'
 import { cn } from '@/lib/utils'
+import Cookies from 'js-cookie'
+import { useNavigate } from 'react-router-dom'
+import { useMutation } from '@tanstack/react-query'
+import { publicPostRequest } from '@/api/apiFunctions'
+import { BASE_URL } from '@/api/apiUrl'
 
 interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {}
 
 const formSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: 'Please enter your email' })
-    .email({ message: 'Invalid email address' }),
+  username: z.string().min(1, { message: 'Please enter your username' }),
   password: z
     .string()
     .min(1, {
       message: 'Please enter your password',
     })
-    .min(7, {
+    .min(6, {
       message: 'Password must be at least 7 characters long',
     }),
 })
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState(false)
-
+  const navigate = useNavigate()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
+      username: '',
       password: '',
     },
   })
 
+  const { mutate } = useMutation({
+    mutationFn: async (data) => {
+      const response = await publicPostRequest(
+        BASE_URL + '/auth/login',
+        data,
+        {}
+      )
+      return response.data
+    },
+    onError: (error) => {
+      console.log(error)
+    },
+    onSuccess: (data) => {
+      // console.log(data.data)
+      Cookies.set('token', data.data.token)
+      Cookies.set('user_profile', JSON.stringify(data.data))
+      navigate('/')
+    },
+  })
   function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
     console.log(data)
-
+    mutate(data)
     setTimeout(() => {
       setIsLoading(false)
     }, 3000)
@@ -61,10 +82,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           <div className='grid gap-2'>
             <FormField
               control={form.control}
-              name='email'
+              name='username'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Username</FormLabel>
                   <FormControl>
                     <Input placeholder='name@example.com' {...field} />
                   </FormControl>
@@ -97,7 +118,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               Login
             </Button>
 
-            <div className='relative my-2'>
+            {/* <div className='relative my-2'>
               <div className='absolute inset-0 flex items-center'>
                 <span className='w-full border-t' />
               </div>
@@ -106,9 +127,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                   Or continue with
                 </span>
               </div>
-            </div>
+            </div> */}
 
-            <div className='flex items-center gap-2'>
+            {/* <div className='flex items-center gap-2'>
               <Button
                 variant='outline'
                 className='w-full'
@@ -127,7 +148,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               >
                 Facebook
               </Button>
-            </div>
+            </div> */}
           </div>
         </form>
       </Form>
