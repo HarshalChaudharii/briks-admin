@@ -424,7 +424,7 @@ const ActivityImages = ({ images }) => {
                     target='_blank'
                     href={IMAGE_BASE_URL + '/images/' + image.url}
                     key={image.id}
-                    className='h-36 w-36'
+                    className='h-36 w-36 bg-white drop-shadow-md'
                   >
                     <img
                       src={IMAGE_BASE_URL + '/images/' + image.url}
