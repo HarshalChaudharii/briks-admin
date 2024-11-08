@@ -1,13 +1,10 @@
 import { Layout } from '@/components/custom/layout'
 import { Button } from '@/components/custom/button'
 import { Card } from '@/components/ui/card'
-import { Search } from '@/components/search'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
 import ThemeSwitch from '@/components/theme-switch'
-import { TopNav } from '@/components/top-nav'
+
 import { UserNav } from '@/components/user-nav'
-import { RecentSales } from './components/recent-sales'
-import { Overview } from './components/overview'
 
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/badge'
@@ -20,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { FolderSync, RefreshCcw } from 'lucide-react'
+import { RefreshCcw } from 'lucide-react'
 import moment from 'moment'
 import { publicGetRequest, publicPostRequest } from '@/api/apiFunctions'
 import { SYNC_DATA } from '@/api/apiUrl'
@@ -46,7 +43,7 @@ export default function Dashboard() {
     },
   })
 
-  const { mutate, isPending } = useMutation({
+  const { mutate, isLoading } = useMutation({
     mutationFn: async () => {
       const response = await publicPostRequest(SYNC_DATA, {}, {})
       return response
@@ -79,7 +76,10 @@ export default function Dashboard() {
           <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
           <div className='flex items-center space-x-2'>
             {/* <Button>Download</Button> */}
-            <Button className=' px-5' isLoading={isPending} onClick={mutate}>
+            <Button
+              className={isLoading ? 'loading-class px-5' : 'px-5'}
+              onClick={() => mutate()}
+            >
               <RefreshCcw className='mr-2' size='20' /> Sync Data
             </Button>
           </div>
@@ -239,6 +239,7 @@ export default function Dashboard() {
               </TableHeader>
               <TableBody>
                 {isSuccess &&
+                  // @ts-ignore
                   data.map((item, index) => (
                     <TableRow key={index}>
                       <TableCell>{item.id}</TableCell>

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconBrandFacebook, IconBrandGithub } from '@tabler/icons-react'
+
 import {
   Form,
   FormControl,
@@ -69,6 +69,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
     console.log(data)
+    //@ts-ignore
     mutate(data)
     setTimeout(() => {
       setIsLoading(false)

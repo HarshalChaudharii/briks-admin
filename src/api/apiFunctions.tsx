@@ -1,9 +1,15 @@
-import { BASE_URL } from './apiUrl'
 import axios, { axiosPrivate, axiosPrivateFormData } from './axios'
 import Cookies from 'js-cookie'
 let i = 1
 
-const handleError = (err) => {
+interface ErrorResponse {
+  response?: {
+    data?: any
+    status: number
+  }
+}
+
+const handleError = (err: ErrorResponse): void => {
   if (err.response?.data) {
     if (err.response.status === 403 || err.response.status === 401) {
       localStorage.removeItem('user_profile')
@@ -20,7 +26,7 @@ const handleError = (err) => {
   }
 }
 
-export const publicGetRequest = async (url) => {
+export const publicGetRequest = async (url: string): Promise<any> => {
   try {
     const response = await axios.get(url)
     return response
@@ -29,7 +35,15 @@ export const publicGetRequest = async (url) => {
   }
 }
 
-export const publicPostRequest = async (url, data, headers) => {
+interface PostRequestHeaders {
+  [key: string]: string
+}
+
+export const publicPostRequest = async (
+  url: string,
+  data: any,
+  headers: PostRequestHeaders
+): Promise<any> => {
   try {
     const response = await axios.post(url, data, headers)
     return response
@@ -38,7 +52,14 @@ export const publicPostRequest = async (url, data, headers) => {
   }
 }
 
-export const publicPutRequest = async (url, data) => {
+interface PutRequestData {
+  [key: string]: any
+}
+
+export const publicPutRequest = async (
+  url: string,
+  data: PutRequestData
+): Promise<any> => {
   try {
     const response = await axios.put(url, data)
     return response
@@ -47,79 +68,131 @@ export const publicPutRequest = async (url, data) => {
   }
 }
 
-export const privateGetRequest = async (url) => {
-  try {
-    // const token = localStorage.getItem('token')
+interface PrivateGetRequestHeaders {
+  Authorization: string
+  [key: string]: string
+}
 
+export const privateGetRequest = async (url: string): Promise<any> => {
+  try {
     const token = Cookies.get('token')
 
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    const headers: PrivateGetRequestHeaders = {
+      Authorization: `Bearer ${token}`,
+    }
+
+    const response = await axios.get(url, { headers })
     return response
   } catch (error) {
-    handleError(error)
+    handleError(error as ErrorResponse)
   }
 }
 
-export const privatePostRequest = async (url, data, headers = {}) => {
+interface PrivatePostRequestHeaders {
+  [key: string]: string
+}
+
+export const privatePostRequest = async (
+  url: string,
+  data: any,
+  headers: PrivatePostRequestHeaders = {}
+): Promise<any> => {
   try {
-    const response = await axiosPrivate.post(url, data, headers)
+    const response = await axiosPrivate.post(url, data, { headers })
     return response
   } catch (error) {
-    handleError(error)
+    handleError(error as ErrorResponse)
   }
 }
 
-export const privatePostRequestFormData = async (url, data) => {
+interface PrivatePostRequestFormData {
+  [key: string]: any
+}
+
+export const privatePostRequestFormData = async (
+  url: string,
+  data: PrivatePostRequestFormData
+): Promise<any> => {
   try {
     const response = await axiosPrivateFormData.post(url, data)
     return response
   } catch (error) {
-    handleError(error)
+    handleError(error as ErrorResponse)
   }
 }
 
-export const privatePutRequest = async (url, data) => {
+interface PrivatePutRequestData {
+  [key: string]: any
+}
+
+export const privatePutRequest = async (
+  url: string,
+  data: PrivatePutRequestData
+): Promise<any> => {
   try {
     const response = await axiosPrivate.put(url, data)
     return response
   } catch (error) {
-    handleError(error)
+    handleError(error as ErrorResponse)
   }
 }
 
-export const privatePutRequestFormData = async (url, data) => {
+interface PrivatePutRequestFormData {
+  [key: string]: any
+}
+
+export const privatePutRequestFormData = async (
+  url: string,
+  data: PrivatePutRequestFormData
+): Promise<any> => {
   try {
     const response = await axiosPrivateFormData.put(url, data)
     return response
   } catch (error) {
-    handleError(error)
+    handleError(error as ErrorResponse)
   }
 }
 
-export const privatePatchRequest = async (url, data) => {
+interface PrivatePatchRequestData {
+  [key: string]: any
+}
+
+export const privatePatchRequest = async (
+  url: string,
+  data: PrivatePatchRequestData
+): Promise<any> => {
   try {
     const response = await axiosPrivate.patch(url, data)
     return response
   } catch (error) {
-    handleError(error)
+    handleError(error as ErrorResponse)
   }
 }
 
-export const privateDeleteRequest = async (url) => {
+interface PrivateDeleteRequestResponse {
+  data: any
+}
+
+export const privateDeleteRequest = async (
+  url: string
+): Promise<PrivateDeleteRequestResponse | undefined> => {
   try {
     const response = await axiosPrivate.delete(url)
     return response
   } catch (error) {
-    handleError(error)
+    handleError(error as ErrorResponse)
+    return undefined
   }
 }
 
-export const getHeaders = (type) => {
-  if (type && type == 'multipart') {
+interface Headers {
+  headers: {
+    'Content-Type': string
+  }
+}
+
+export const getHeaders = (type: string): Headers | undefined => {
+  if (type && type === 'multipart') {
     return {
       headers: {
         'Content-Type': 'multipart/form-data',

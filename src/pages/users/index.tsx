@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { Badge } from '@/components/ui/badge'
+import './pagination.css'
+import { useEffect, useState } from 'react'
+
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -10,22 +10,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ArrowUp, FolderSync, SearchIcon } from 'lucide-react'
-import moment from 'moment'
+import { ArrowUp, SearchIcon } from 'lucide-react'
+
 import { Layout } from '@/components/custom/layout'
 import { TopNav } from '@/components/top-nav'
 import { Search } from '@/components/search'
 import ThemeSwitch from '@/components/theme-switch'
 import { UserNav } from '@/components/user-nav'
-import {
-  privateGetRequest,
-  publicGetRequest,
-  publicPostRequest,
-} from '@/api/apiFunctions'
-import { GET_ALL_USERS, SYNC_DATA } from '@/api/apiUrl'
-import { toast } from 'sonner'
+import { privateGetRequest } from '@/api/apiFunctions'
+import { GET_ALL_USERS } from '@/api/apiUrl'
+
 import { Card, CardFooter } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
+
 import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
@@ -34,9 +30,17 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuRadioGroup,
 } from '@radix-ui/react-dropdown-menu'
+import ReactPaginate from 'react-paginate'
 
 const UsersListPage = () => {
-  const [data, setData] = useState([])
+  interface User {
+    id: number
+    name: string
+    username: string
+    role: string
+  }
+
+  const [data, setData] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -71,19 +75,25 @@ const UsersListPage = () => {
     getUsersList()
   }, [searchTerm, currentPage, pageSize])
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchTerm(e.target.value)
     setCurrentPage(1)
   }
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page)
-  }
-  const handlePageSizeChange = (size) => {
-    setPageSize(size)
+  // const handlePageChange = (page) => {
+  //   setCurrentPage(page)
+  // }
+  const handlePageSizeChange = (size: string) => {
+    setPageSize(Number(size))
     setCurrentPage(1)
   }
+  interface SelectedPage {
+    selected: number
+  }
 
+  const handlePageChange = (selectedPage: SelectedPage): void => {
+    setCurrentPage(selectedPage.selected + 1) // react-paginate uses 0-based index
+  }
   return (
     <Layout>
       <Layout.Header>
@@ -164,7 +174,7 @@ const UsersListPage = () => {
                 {Math.min(currentPage * pageSize, pagination.totalItems)} of{' '}
                 {pagination.totalItems} results
               </div>
-              <div className='flex items-center gap-2'>
+              {/* <div className='flex items-center gap-2'>
                 <Button
                   variant='outline'
                   size='sm'
@@ -181,13 +191,6 @@ const UsersListPage = () => {
                     key={page}
                     variant={currentPage === page ? 'solid' : 'outline'}
                     size='sm'
-                    className={cn(
-                      currentPage !== page &&
-                        currentPage + 1 !== page &&
-                        currentPage - 1 !== page
-                        ? 'hidden'
-                        : 'block'
-                    )}
                     onClick={() => handlePageChange(page)}
                   >
                     {page}
@@ -201,7 +204,26 @@ const UsersListPage = () => {
                 >
                   Next
                 </Button>
-              </div>
+              </div> */}
+              <ReactPaginate
+                previousLabel={'Previous'}
+                nextLabel={'Next'}
+                breakLabel={'...'}
+                pageCount={pagination.totalPages}
+                marginPagesDisplayed={2}
+                pageRangeDisplayed={1}
+                onPageChange={handlePageChange}
+                containerClassName={'pagination'}
+                pageClassName={'page-item'}
+                pageLinkClassName={'page-link'}
+                previousClassName={'page-item'}
+                previousLinkClassName={'page-link'}
+                nextClassName={'page-item'}
+                nextLinkClassName={'page-link'}
+                breakClassName={'page-item'}
+                breakLinkClassName={'page-link'}
+                activeClassName={'active'}
+              />
             </CardFooter>
           </Card>
         </div>

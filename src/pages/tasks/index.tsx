@@ -1,12 +1,10 @@
 import { Layout } from '@/components/custom/layout'
-import { Search } from '@/components/search'
+
 import ThemeSwitch from '@/components/theme-switch'
 import { UserNav } from '@/components/user-nav'
-import { DataTable } from './components/data-table'
-import { columns } from './components/columns'
-import { tasks } from './data/tasks'
+
 import { privateGetRequest } from '@/api/apiFunctions'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BASE_URL, IMAGE_BASE_URL } from '@/api/apiUrl'
 import { ArrowUp, Image, SearchIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -41,11 +39,27 @@ import {
 } from '@/components/ui/dialog'
 
 export default function Tasks() {
-  const [data, setData] = useState([])
+  interface ProjectItem {
+    id: number
+    name: string
+    plannedStartDate: string
+    plannedEndDate: string | null
+    actualStartDate: string | null
+    actualEndDate: string | null
+    plannedDuration: number
+    remainingDuration: number
+    reasonForDelay: string
+    remarks: string
+    photos: { url: string; id: number }[]
+    status: string
+    hasNext?: boolean
+  }
+
+  const [data, setData] = useState<ProjectItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [view, setView] = useState('PROJECT')
+  // const [view, setView] = useState('PROJECT')
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -54,14 +68,20 @@ export default function Tasks() {
   })
 
   const [searchParams, setSearchParams] = useSearchParams() // Managing URL params
-
-  const currentWbsId = searchParams.get('wbsId') // Get current WBS ID from params
+  const view = useMemo(
+    () => searchParams.get('view') || 'PROJECT',
+    [searchParams]
+  )
+  const currentWbsId = useMemo(
+    () => searchParams.get('wbsId') || '',
+    [searchParams]
+  )
   const hasWbsId = !!currentWbsId // Boolean to determine if we're in a WBS view
 
   // Function to fetch all project data
-  const getAllProjectList = async () => {
+  const getAllProjectList = useCallback(async () => {
     try {
-      let url =
+      const url =
         BASE_URL +
         '/projects/all' +
         '?pageNo=' +
@@ -76,97 +96,110 @@ export default function Tasks() {
       if (response?.data.success) {
         setData(response.data.data)
         setPagination(response.data.pagination)
+        setSearchParams({ view: 'PROJECT', wbsId: '' }, { replace: true }) // Avoid redundant state pushes
       }
-      setView('PROJECT')
     } catch (error) {
       console.log(error)
     }
-  }
+  }, [currentPage, pageSize, searchTerm, setSearchParams])
 
   // Function to fetch WBS list based on WBS ID
-  const getAllWbsList = async (wbsParams) => {
-    try {
-      const response = await privateGetRequest(
-        BASE_URL +
-          '/project/wbs/all/' +
-          wbsParams +
-          '?pageNo=' +
-          currentPage +
-          '&pageSize=' +
-          pageSize +
-          '&search=' +
-          searchTerm
-      )
-      if (response?.data.success) {
-        setData(response.data.data)
-        setPagination(response.data.pagination)
-        setView('WBS')
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
 
-  const getAllActivityList = async (wbsParams) => {
-    try {
-      const response = await privateGetRequest(
-        BASE_URL +
-          '/activity/all/' +
-          wbsParams +
-          '?pageNo=' +
-          currentPage +
-          '&pageSize=' +
-          pageSize +
-          '&search=' +
-          searchTerm
-      )
-      if (response?.data.success) {
-        setData(response.data.data)
-        setPagination(response.data.pagination)
-        setView('ACTIVITY')
+  // Memoized `getAllWbsList` and `getAllActivityList` with replace flag
+  const getAllWbsList = useCallback(
+    async (wbsParams: string) => {
+      try {
+        const url = `${BASE_URL}/project/wbs/all/${wbsParams}?pageNo=${currentPage}&pageSize=${pageSize}&search=${searchTerm}`
+
+        const response = await privateGetRequest(url)
+        if (response?.data.success) {
+          setData(response.data.data)
+          setPagination(response.data.pagination)
+          setSearchParams({ view: 'WBS', wbsId: wbsParams })
+        }
+      } catch (error) {
+        console.log(error)
       }
-    } catch (error) {
-      console.log(error)
-    }
-  }
+    },
+    [currentPage, pageSize, searchTerm, setSearchParams]
+  )
+
+  const getAllActivityList = useCallback(
+    // @ts-ignore
+    async (wbsParams) => {
+      try {
+        const url = `${BASE_URL}/activity/all/${wbsParams}?pageNo=${currentPage}&pageSize=${pageSize}&search=${searchTerm}`
+
+        const response = await privateGetRequest(url)
+        if (response?.data.success) {
+          setData(response.data.data)
+          setPagination(response.data.pagination)
+          setSearchParams(
+            { view: 'ACTIVITY', wbsId: wbsParams }
+            // { replace: true }
+          )
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    [currentPage, pageSize, searchTerm, setSearchParams]
+  )
+
+  // Handle back navigation to project list
+  const handleBackClick = useCallback(() => {
+    setSearchParams({ view: 'PROJECT', wbsId: '' }, { replace: true })
+  }, [setSearchParams])
 
   // Fetch data based on the presence of `wbsId` in URL parameters
   useEffect(() => {
-    if (hasWbsId) {
+    if (view === 'PROJECT') {
+      getAllProjectList()
+    } else if (view === 'WBS' && currentWbsId) {
       getAllWbsList(currentWbsId)
-      // Fetch WBS data if `wbsId` exists
-    } else {
-      getAllProjectList() // Fetch projects if `wbsId` does not exist
+    } else if (view === 'ACTIVITY' && currentWbsId) {
+      getAllActivityList(currentWbsId)
     }
-  }, [currentWbsId, searchTerm, currentPage, pageSize])
+  }, [view, currentWbsId, getAllProjectList, getAllWbsList, getAllActivityList])
 
   // Function to navigate to a WBS node (push wbsId to URL)
-  const handleRowClick = (wbsId, hasNext) => {
-    if (hasNext === true) {
-      setSearchParams({ wbsId: wbsId }) // Update the URL with the new WBS ID
-      setView('WBS')
-    } else {
-      setView('ACTIVITY')
-      getAllActivityList(wbsId)
-      // console.log('Activity', wbsId)
+
+  interface HandleRowClickParams {
+    wbsId: string
+    hasNext: boolean
+  }
+
+  const handleRowClick = useCallback(
+    ({ wbsId, hasNext }: HandleRowClickParams) => {
+      if (hasNext === true) {
+        getAllWbsList(wbsId)
+      } else {
+        getAllActivityList(wbsId)
+      }
+    },
+    [getAllActivityList, getAllWbsList]
+  )
+
+  interface HandleSearchEvent {
+    target: {
+      value: string
     }
   }
 
-  // Function to navigate back to the project list (remove wbsId from URL)
-  const handleBackClick = () => {
-    setSearchParams({}) // Clear wbsId from the URL to go back to the project list
-  }
-
-  const handleSearch = (e) => {
+  const handleSearch = (e: HandleSearchEvent) => {
     setSearchTerm(e.target.value)
     setCurrentPage(1)
   }
 
-  const handlePageChange = (page) => {
+  interface HandlePageChangeParams {
+    page: number
+  }
+
+  const handlePageChange = ({ page }: HandlePageChangeParams) => {
     setCurrentPage(page)
   }
 
-  const handlePageSizeChange = (size) => {
+  const handlePageSizeChange = (size: any) => {
     setPageSize(size)
     setCurrentPage(1)
   }
@@ -250,6 +283,7 @@ export default function Tasks() {
                     {data.map((item, index) => (
                       <TableRow
                         key={index}
+                        // @ts-ignore
                         onClick={() => handleRowClick(item.projectWBSId, true)}
                         className='cursor-pointer'
                       >
@@ -286,7 +320,12 @@ export default function Tasks() {
                     {data.map((item, index) => (
                       <TableRow
                         key={index}
-                        onClick={() => handleRowClick(item.id, item.hasNext)}
+                        onClick={() =>
+                          handleRowClick({
+                            wbsId: item.id.toString(),
+                            hasNext: item.hasNext ?? false,
+                          })
+                        }
                         className='cursor-pointer'
                       >
                         <TableCell>{item.id}</TableCell>
@@ -383,7 +422,7 @@ export default function Tasks() {
                   <Button
                     variant='outline'
                     size='sm'
-                    onClick={() => handlePageChange(currentPage - 1)}
+                    onClick={() => handlePageChange({ page: currentPage - 1 })}
                     disabled={currentPage === 1}
                   >
                     Previous
@@ -391,7 +430,7 @@ export default function Tasks() {
                   <Button
                     variant='outline'
                     size='sm'
-                    onClick={() => handlePageChange(currentPage + 1)}
+                    onClick={() => handlePageChange({ page: currentPage + 1 })}
                     disabled={currentPage === pagination.totalPages}
                   >
                     Next
@@ -406,8 +445,9 @@ export default function Tasks() {
   )
 }
 
+// @ts-ignore
 const ActivityImages = ({ images }) => {
-  console.log(images)
+  // console.log(images)
   return (
     <Dialog>
       <DialogTrigger>
@@ -419,6 +459,7 @@ const ActivityImages = ({ images }) => {
           <DialogDescription className=''>
             <div className='relative flex flex-1 gap-2'>
               {images &&
+                // @ts-ignore
                 images.map((image, index) => (
                   <a
                     target='_blank'
