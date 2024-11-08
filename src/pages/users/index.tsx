@@ -87,9 +87,7 @@ const UsersListPage = () => {
   return (
     <Layout>
       <Layout.Header>
-        <TopNav links={topNav} />
-        <div className='ml-auto flex items-center space-x-4'>
-          <Search />
+        <div className='flex items-center ml-auto space-x-4'>
           <ThemeSwitch />
           <UserNav />
         </div>
@@ -111,8 +109,8 @@ const UsersListPage = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant='outline' className='shrink-0'>
-                  {/* <IoIosArrowRoundUp className='mr-2 h-4 w-4' /> */}
-                  <ArrowUp className='mr-2 h-4 w-4' />
+                  {/* <IoIosArrowRoundUp className='w-4 h-4 mr-2' /> */}
+                  <ArrowUp className='w-4 h-4 mr-2' />
                   {pageSize} per page
                 </Button>
               </DropdownMenuTrigger>
@@ -158,7 +156,7 @@ const UsersListPage = () => {
                 ))}
               </TableBody>
             </Table>
-            <CardFooter className='flex items-center justify-between border-t pt-6'>
+            <CardFooter className='flex items-center justify-between pt-6 border-t'>
               <div className='text-xs text-muted-foreground'>
                 Showing {(currentPage - 1) * pageSize + 1} to{' '}
                 {Math.min(currentPage * pageSize, pagination.totalItems)} of{' '}
