@@ -1,7 +1,14 @@
 import './pagination.css'
-import { useEffect, useState } from 'react'
 
-import { Button } from '@/components/ui/button'
+import { ArrowUp, SearchIcon } from 'lucide-react'
+import { Card, CardFooter } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@radix-ui/react-dropdown-menu'
 import {
   Table,
   TableBody,
@@ -10,27 +17,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ArrowUp, SearchIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
+import { Button } from '@/components/ui/button'
+import { GET_ALL_USERS } from '@/api/apiUrl'
+import { Input } from '@/components/ui/input'
 import { Layout } from '@/components/custom/layout'
-import { TopNav } from '@/components/top-nav'
-import { Search } from '@/components/search'
+import ReactPaginate from 'react-paginate'
 import ThemeSwitch from '@/components/theme-switch'
 import { UserNav } from '@/components/user-nav'
 import { privateGetRequest } from '@/api/apiFunctions'
-import { GET_ALL_USERS } from '@/api/apiUrl'
-
-import { Card, CardFooter } from '@/components/ui/card'
-
-import { Input } from '@/components/ui/input'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuRadioItem,
-  DropdownMenuRadioGroup,
-} from '@radix-ui/react-dropdown-menu'
-import ReactPaginate from 'react-paginate'
 
 const UsersListPage = () => {
   interface User {
@@ -97,7 +93,7 @@ const UsersListPage = () => {
   return (
     <Layout>
       <Layout.Header>
-        <div className='flex items-center ml-auto space-x-4'>
+        <div className='ml-auto flex items-center space-x-4'>
           <ThemeSwitch />
           <UserNav />
         </div>
@@ -120,7 +116,7 @@ const UsersListPage = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant='outline' className='shrink-0'>
                   {/* <IoIosArrowRoundUp className='w-4 h-4 mr-2' /> */}
-                  <ArrowUp className='w-4 h-4 mr-2' />
+                  <ArrowUp className='mr-2 h-4 w-4' />
                   {pageSize} per page
                 </Button>
               </DropdownMenuTrigger>
@@ -166,7 +162,7 @@ const UsersListPage = () => {
                 ))}
               </TableBody>
             </Table>
-            <CardFooter className='flex items-center justify-between pt-6 border-t'>
+            <CardFooter className='flex items-center justify-between border-t pt-6'>
               <div className='text-xs text-muted-foreground'>
                 Showing {(currentPage - 1) * pageSize + 1} to{' '}
                 {Math.min(currentPage * pageSize, pagination.totalItems)} of{' '}

@@ -1,14 +1,3 @@
-import { Layout } from '@/components/custom/layout'
-import { Button } from '@/components/custom/button'
-import { Card } from '@/components/ui/card'
-
-import ThemeSwitch from '@/components/theme-switch'
-
-import { UserNav } from '@/components/user-nav'
-
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { Badge } from '@/components/ui/badge'
-
 import {
   Table,
   TableBody,
@@ -17,12 +6,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { privateGetRequest, privatePostRequest } from '@/api/apiFunctions'
+import { useMutation, useQuery } from '@tanstack/react-query'
+
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/custom/button'
+import { Card } from '@/components/ui/card'
+import { Layout } from '@/components/custom/layout'
 import { RefreshCcw } from 'lucide-react'
-import moment from 'moment'
-import { publicGetRequest, publicPostRequest } from '@/api/apiFunctions'
 import { SYNC_DATA } from '@/api/apiUrl'
-import { toast } from 'sonner'
+import ThemeSwitch from '@/components/theme-switch'
+import { UserNav } from '@/components/user-nav'
 import { cn } from '@/lib/utils'
+import moment from 'moment'
+import { toast } from 'sonner'
 
 const columns = [
   { name: 'ID', uid: 'id' },
@@ -38,14 +35,14 @@ export default function Dashboard() {
   const { data, isSuccess, refetch } = useQuery({
     queryKey: ['get-sync-logs'],
     queryFn: async () => {
-      const response = await publicGetRequest(SYNC_DATA)
+      const response = await privateGetRequest(SYNC_DATA)
       return response.data.data
     },
   })
 
   const { mutate, isLoading } = useMutation({
     mutationFn: async () => {
-      const response = await publicPostRequest(SYNC_DATA, {}, {})
+      const response = await privatePostRequest(SYNC_DATA, {}, {})
       return response
     },
 
@@ -76,7 +73,11 @@ export default function Dashboard() {
           <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
           <div className='flex items-center space-x-2'>
             {/* <Button>Download</Button> */}
-            <Button className='px-5 ' disabled={isLoading} onClick={mutate}>
+            <Button
+              className='px-5 '
+              disabled={isLoading}
+              onClick={() => mutate()}
+            >
               <RefreshCcw className='mr-2' size='20' /> Sync Data
             </Button>
           </div>

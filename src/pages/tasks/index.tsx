@@ -1,34 +1,6 @@
-import { Layout } from '@/components/custom/layout'
-
-import ThemeSwitch from '@/components/theme-switch'
-import { UserNav } from '@/components/user-nav'
-
-import { privateGetRequest } from '@/api/apiFunctions'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BASE_URL, IMAGE_BASE_URL } from '@/api/apiUrl'
 import { ArrowUp, Image, SearchIcon } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from '@radix-ui/react-dropdown-menu'
-import { Button } from '@/components/custom/button'
-import {
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-} from '@/components/ui/dropdown-menu'
+import { BASE_URL, IMAGE_BASE_URL } from '@/api/apiUrl'
 import { Card, CardFooter } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import moment from 'moment'
-import { useSearchParams } from 'react-router-dom'
 import {
   Dialog,
   DialogContent,
@@ -37,6 +9,33 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from '@radix-ui/react-dropdown-menu'
+import {
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from '@/components/ui/dropdown-menu'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { Button } from '@/components/custom/button'
+import { Input } from '@/components/ui/input'
+import { Layout } from '@/components/custom/layout'
+import ThemeSwitch from '@/components/theme-switch'
+import { UserNav } from '@/components/user-nav'
+import moment from 'moment'
+import { privateGetRequest } from '@/api/apiFunctions'
+import { useSearchParams } from 'react-router-dom'
 
 export default function Tasks() {
   interface ProjectItem {
@@ -76,6 +75,8 @@ export default function Tasks() {
     () => searchParams.get('wbsId') || '',
     [searchParams]
   )
+
+  console.log('currentId', currentWbsId)
   const hasWbsId = !!currentWbsId // Boolean to determine if we're in a WBS view
 
   // Function to fetch all project data
@@ -164,13 +165,9 @@ export default function Tasks() {
 
   // Function to navigate to a WBS node (push wbsId to URL)
 
-  interface HandleRowClickParams {
-    wbsId: string
-    hasNext: boolean
-  }
-
   const handleRowClick = useCallback(
-    ({ wbsId, hasNext }: HandleRowClickParams) => {
+    (wbsId: string, hasNext: boolean) => {
+      console.log("I'm here", wbsId)
       if (hasNext === true) {
         getAllWbsList(wbsId)
       } else {
@@ -321,10 +318,10 @@ export default function Tasks() {
                       <TableRow
                         key={index}
                         onClick={() =>
-                          handleRowClick({
-                            wbsId: item.id.toString(),
-                            hasNext: item.hasNext ?? false,
-                          })
+                          handleRowClick(
+                            item.id.toString(),
+                            item.hasNext ?? false
+                          )
                         }
                         className='cursor-pointer'
                       >
@@ -471,7 +468,7 @@ const ActivityImages = ({ images }) => {
                       src={IMAGE_BASE_URL + '/images/' + image.url}
                       key={index}
                       alt='activity'
-                      className='object-fit h-full w-40  '
+                      className='object-fit h-full w-40 '
                       loading='lazy'
                     />
                   </a>
