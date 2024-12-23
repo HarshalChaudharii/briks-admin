@@ -42,7 +42,7 @@ export default function Dashboard() {
 
   const { mutate, isLoading } = useMutation({
     mutationFn: async () => {
-      const response = await privatePostRequest(SYNC_DATA, {}, {})
+      const response = await privatePostRequest(SYNC_DATA, {})
       return response
     },
 

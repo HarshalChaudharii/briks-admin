@@ -1,5 +1,7 @@
 import axios, { axiosPrivate, axiosPrivateFormData } from './axios'
+
 import Cookies from 'js-cookie'
+
 let i = 1
 
 interface ErrorResponse {
@@ -88,17 +90,12 @@ export const privateGetRequest = async (url: string): Promise<any> => {
   }
 }
 
-interface PrivatePostRequestHeaders {
-  [key: string]: string
-}
-
 export const privatePostRequest = async (
   url: string,
-  data: any,
-  headers: PrivatePostRequestHeaders = {}
+  data: any
 ): Promise<any> => {
   try {
-    const response = await axiosPrivate.post(url, data, { headers })
+    const response = await axiosPrivate.post(url, data)
     return response
   } catch (error) {
     handleError(error as ErrorResponse)
