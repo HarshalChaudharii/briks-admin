@@ -27,15 +27,19 @@ import ReactPaginate from 'react-paginate'
 import ThemeSwitch from '@/components/theme-switch'
 import { UserNav } from '@/components/user-nav'
 import { privateGetRequest } from '@/api/apiFunctions'
-
+import { UsersActionDialog } from '@/components/ui/users-action-dialog'
+import { User, userListSchema } from '@/features/data/schema'
+import { IconUserPlus } from '@tabler/icons-react'
+import useDialogState from '@/hooks/use-dialog-state'
 const UsersListPage = () => {
-  interface User {
-    id: number
-    name: string
-    username: string
-    role: string
-  }
-
+  // interface User {
+  //   id: number
+  //   name: string
+  //   username: string
+  //   role: string
+  // }
+  type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete'
+  // const [open, setOpen] = useDialogState<UsersDialogType>(null)
   const [data, setData] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -47,6 +51,8 @@ const UsersListPage = () => {
     remainingPages: 0,
   })
 
+  const [open, setOpen] = useDialogState<UsersDialogType>(null)
+  const [currentRow, setCurrentRow] = useState<User | null>(null)
   const getUsersList = async () => {
     try {
       const response = await privateGetRequest(
@@ -90,6 +96,7 @@ const UsersListPage = () => {
   const handlePageChange = (selectedPage: SelectedPage): void => {
     setCurrentPage(selectedPage.selected + 1) // react-paginate uses 0-based index
   }
+  // const setOpen = (type: string) => {}
   return (
     <Layout>
       <Layout.Header>
@@ -99,6 +106,12 @@ const UsersListPage = () => {
         </div>
       </Layout.Header>
       <Layout.Body>
+        <UsersActionDialog
+          key='user-add'
+          open={open === 'add'}
+          onOpenChange={() => setOpen('add')}
+          getUsersList={getUsersList}
+        />
         <div className='flex flex-col gap-4'>
           <div className='flex items-center gap-4'>
             <div className='relative flex-1'>
@@ -112,6 +125,9 @@ const UsersListPage = () => {
                 className='pl-8'
               />
             </div>
+            <Button className='space-x-1' onClick={() => setOpen('add')}>
+              <span>Add User</span> <IconUserPlus size={18} />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant='outline' className='shrink-0'>
@@ -141,6 +157,7 @@ const UsersListPage = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
           <Card>
             <Table>
               <TableHeader>
@@ -158,6 +175,17 @@ const UsersListPage = () => {
                     <TableCell>{item.name}</TableCell>
                     <TableCell>{item.username}</TableCell>
                     <TableCell>{item.role}</TableCell>
+                    <TableCell>
+                      {' '}
+                      <Button
+                        onClick={() => {
+                          setOpen('add')
+                          setCurrentRow(item)
+                        }}
+                      >
+                        <span>Edit</span>
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -168,37 +196,7 @@ const UsersListPage = () => {
                 {Math.min(currentPage * pageSize, pagination.totalItems)} of{' '}
                 {pagination.totalItems} results
               </div>
-              {/* <div className='flex items-center gap-2'>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  disabled={currentPage === 1}
-                  onClick={() => handlePageChange(currentPage - 1)}
-                >
-                  Previous
-                </Button>
-                {Array.from(
-                  { length: pagination.totalPages },
-                  (_, i) => i + 1
-                ).map((page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? 'solid' : 'outline'}
-                    size='sm'
-                    onClick={() => handlePageChange(page)}
-                  >
-                    {page}
-                  </Button>
-                ))}
-                <Button
-                  variant='outline'
-                  size='sm'
-                  disabled={currentPage === pagination.totalPages}
-                  onClick={() => handlePageChange(currentPage + 1)}
-                >
-                  Next
-                </Button>
-              </div> */}
+
               <ReactPaginate
                 previousLabel={'Previous'}
                 nextLabel={'Next'}
@@ -225,26 +223,26 @@ const UsersListPage = () => {
     </Layout>
   )
 }
-const topNav = [
-  {
-    title: 'Overview',
-    href: 'dashboard/overview',
-    isActive: true,
-  },
-  {
-    title: 'Customers',
-    href: 'dashboard/customers',
-    isActive: false,
-  },
-  {
-    title: 'Products',
-    href: 'dashboard/products',
-    isActive: false,
-  },
-  {
-    title: 'Settings',
-    href: 'dashboard/settings',
-    isActive: false,
-  },
-]
+// const topNav = [
+//   {
+//     title: 'Overview',
+//     href: 'dashboard/overview',
+//     isActive: true,
+//   },
+//   {
+//     title: 'Customers',
+//     href: 'dashboard/customers',
+//     isActive: false,
+//   },
+//   {
+//     title: 'Products',
+//     href: 'dashboard/products',
+//     isActive: false,
+//   },
+//   {
+//     title: 'Settings',
+//     href: 'dashboard/settings',
+//     isActive: false,
+//   },
+// ]
 export default UsersListPage
