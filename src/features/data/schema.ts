@@ -4,7 +4,7 @@ const userStatusSchema = z.union([
   z.literal('ACTIVE'),
   z.literal('INACTIVE'),
   //   z.literal('invited'),
-  //   z.literal('suspended'),
+  z.literal('SUSPENDED'),
 ])
 export type UserStatus = z.infer<typeof userStatusSchema>
 
@@ -15,6 +15,7 @@ const userRoleSchema = z.union([
   //   z.literal('manager'),
   z.literal('QUALITY'),
   z.literal('MANAGER'),
+  z.literal('ENGINEER'),
 ])
 export type UserRole = z.infer<typeof userRoleSchema>
 
@@ -33,7 +34,7 @@ const userSchema = z.object({
   name: z.string(),
   username: z.string(),
   role: userRoleSchema,
-  status: userStatusSchema,
+  status: userStatusSchema.optional(),
 })
 export type User = z.infer<typeof userSchema>
 

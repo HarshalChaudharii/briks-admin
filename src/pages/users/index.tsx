@@ -27,10 +27,15 @@ import ReactPaginate from 'react-paginate'
 import ThemeSwitch from '@/components/theme-switch'
 import { UserNav } from '@/components/user-nav'
 import { privateGetRequest } from '@/api/apiFunctions'
-import { UsersActionDialog } from '@/components/ui/users-action-dialog'
+import { UsersActionDialog } from '@/pages/users/components/users-action-dialog'
 import { User, userListSchema } from '@/features/data/schema'
-import { IconUserPlus } from '@tabler/icons-react'
+import { IconEdit, IconTrash, IconUserPlus } from '@tabler/icons-react'
 import useDialogState from '@/hooks/use-dialog-state'
+import { UsersDeleteDialog } from './components/users-delete-dialog'
+import UpdateUserStatus from './components/UpdateUserStatus'
+import { callTypes } from '@/data/data'
+import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 const UsersListPage = () => {
   // interface User {
   //   id: number
@@ -38,7 +43,7 @@ const UsersListPage = () => {
   //   username: string
   //   role: string
   // }
-  type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete'
+  type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'status'
   // const [open, setOpen] = useDialogState<UsersDialogType>(null)
   const [data, setData] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -107,6 +112,7 @@ const UsersListPage = () => {
       </Layout.Header>
       <Layout.Body>
         <UsersActionDialog
+          currentRow={currentRow}
           key='user-add'
           open={open === 'add'}
           onOpenChange={() => setOpen('add')}
@@ -165,29 +171,61 @@ const UsersListPage = () => {
                   <TableHead className='cursor-pointer'>ID</TableHead>
                   <TableHead className='cursor-pointer'>Name</TableHead>
                   <TableHead className='cursor-pointer'>Username</TableHead>
+                  <TableHead className='cursor-pointer'>Status</TableHead>
                   <TableHead className='cursor-pointer'>Role</TableHead>
+                  <TableHead className='sr-only'>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{item.id}</TableCell>
-                    <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.username}</TableCell>
-                    <TableCell>{item.role}</TableCell>
-                    <TableCell>
-                      {' '}
-                      <Button
-                        onClick={() => {
-                          setOpen('add')
-                          setCurrentRow(item)
-                        }}
-                      >
-                        <span>Edit</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {data.map((item, index) => {
+                  const badgeColor = item?.status
+                    ? callTypes.get(item.status)
+                    : ''
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell>{item.username}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant='outline'
+                          className={cn(
+                            `capitalize ${badgeColor} cursor-pointer`
+                          )}
+                          onClick={() => {
+                            setOpen('status')
+                            setCurrentRow(item)
+                          }}
+                        >
+                          {item.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{item.role}</TableCell>
+                      <TableCell className='flex items-center space-x-4'>
+                        <span>
+                          <IconEdit
+                            size={20}
+                            className='cursor-pointer'
+                            onClick={() => {
+                              setOpen('edit')
+                              setCurrentRow(item)
+                            }}
+                          />
+                        </span>
+                        <span>
+                          <IconTrash
+                            size={20}
+                            className='cursor-pointer text-red-500'
+                            onClick={() => {
+                              setOpen('delete')
+                              setCurrentRow(item)
+                            }}
+                          />
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
             <CardFooter className='flex items-center justify-between border-t pt-6'>
@@ -218,6 +256,49 @@ const UsersListPage = () => {
               />
             </CardFooter>
           </Card>
+        </div>
+        {currentRow && (
+          <>
+            <UsersActionDialog
+              key={`user-edit-${currentRow.id}`}
+              open={open === 'edit'}
+              onOpenChange={() => {
+                setOpen('edit')
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+              }}
+              currentRow={currentRow}
+              getUsersList={getUsersList}
+            />
+
+            <UsersDeleteDialog
+              key={`user-delete-${currentRow.id}`}
+              open={open === 'delete'}
+              onOpenChange={() => {
+                setOpen('delete')
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+              }}
+              currentRow={currentRow}
+              getUsersList={getUsersList}
+            />
+          </>
+        )}
+        <div>
+          <UpdateUserStatus
+            key={`user-status-${currentRow?.id}`}
+            open={open === 'status'}
+            onOpenChange={() => {
+              setOpen('status')
+              setTimeout(() => {
+                setCurrentRow(null)
+              }, 500)
+            }}
+            currentRow={currentRow}
+            getUsersList={getUsersList}
+          />
         </div>
       </Layout.Body>
     </Layout>

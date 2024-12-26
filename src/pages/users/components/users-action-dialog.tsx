@@ -25,20 +25,37 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { PasswordInput } from '@/components/password-input'
 import { SelectDropdown } from '@/components/select-dropdown'
-import { userTypes } from '../../data/data'
-import { User } from '../../features/data/schema'
+import { userTypes } from '../../../data/data'
+import { User } from '../../../features/data/schema'
 import { useMutation } from '@tanstack/react-query'
 import { privatePostRequest } from '@/api/apiFunctions'
 import { CREATE_USER } from '@/api/apiUrl'
 
-const formSchema = z.object({
-  name: z.string().min(1, { message: 'First Name is required.' }),
-  username: z.string().min(1, { message: 'Username is required.' }),
-  password: z.string().transform((pwd) => pwd.trim()),
-  role: z.string().min(1, { message: 'Role is required.' }),
-  confirmPassword: z.string().transform((pwd) => pwd.trim()),
-  isEdit: z.boolean(),
-})
+const formSchema = z
+  .object({
+    name: z.string().min(1, { message: 'First Name is required.' }),
+    username: z.string().min(1, { message: 'Username is required.' }),
+    role: z.string().min(1, { message: 'Role is required.' }),
+    password: z.string().transform((pwd) => pwd.trim()),
+    confirmPassword: z.string().transform((pwd) => pwd.trim()),
+    isEdit: z.boolean(),
+  })
+  .superRefine(({ role, password, confirmPassword }, ctx) => {
+    if (role === 'ENGINEER') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Engineer role is not allowed.',
+        path: ['role'],
+      })
+    }
+    if (password !== confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Passwords don't match.",
+        path: ['confirmPassword'],
+      })
+    }
+  })
 // .superRefine(({ isEdit, password, confirmPassword }, ctx) => {
 //   if (!isEdit || (isEdit && password !== '')) {
 //     if (password === '') {
@@ -85,7 +102,7 @@ const formSchema = z.object({
 type UserForm = z.infer<typeof formSchema>
 
 interface Props {
-  currentRow?: User
+  currentRow?: User | null
   open: boolean
   onOpenChange: (open: boolean) => void
   getUsersList: () => void
@@ -103,6 +120,7 @@ export function UsersActionDialog({
     defaultValues: isEdit
       ? {
           ...currentRow,
+          role: currentRow?.role || '',
           password: '',
           confirmPassword: '',
           isEdit,
@@ -138,18 +156,52 @@ export function UsersActionDialog({
     onError: (error: any) => {
       console.log(error)
       toast({
-        title: 'Error',
+        title: 'Error creating user',
         description: (
           <div>
-            <p>Error: {error?.response?.data.message}</p>
+            <p>{error?.response?.data.message}</p>
           </div>
         ),
       })
     },
   })
+  const { mutate: updateUser } = useMutation({
+    mutationFn: async (values: UserForm) => {
+      const response = await privatePostRequest(
+        CREATE_USER + '/' + currentRow?.id,
+        values
+      )
+      return response.data
+    },
+    onSuccess: () => {
+      getUsersList()
+      form.reset()
+      toast({
+        title: 'User updated',
+        description: (
+          <div>
+            <p>User has been updated successfully.</p>
+          </div>
+        ),
+      })
+      onOpenChange(false)
+    },
+    onError: (error: any) => {
+      console.log(error)
+      toast({
+        title: 'Error updating user',
+        description: (
+          <div>
+            <p>{error?.response?.data.message}</p>
+          </div>
+        ),
+      })
+    },
+  })
+
   const onSubmit = (values: UserForm) => {
     console.log(values)
-    createUser(values)
+    isEdit ? updateUser(values) : createUser(values)
   }
 
   const isPasswordTouched = !!form.formState.dirtyFields.password
@@ -170,7 +222,7 @@ export function UsersActionDialog({
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className='-mr-4 h-[20rem] w-full py-1 pr-4'>
+        <ScrollArea className='-mr-4 h-[18rem] w-full py-1 pr-4'>
           <Form {...form}>
             <form
               id='user-form'
