@@ -66,7 +66,7 @@ export default function Nav({
         className
       )}
     >
-      <TooltipProvider delayDuration={0}>
+      <TooltipProvider delayDuration={1}>
         <nav className='grid gap-1 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2'>
           {links.map(renderLink)}
         </nav>

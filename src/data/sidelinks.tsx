@@ -1,6 +1,8 @@
 import {
+  IconApps,
   IconChecklist,
   IconLayoutDashboard,
+  IconMessages,
   IconUsers,
 } from '@tabler/icons-react'
 
@@ -35,12 +37,18 @@ export const sidelinks: SideLink[] = [
   //   href: '/chats',
   //   icon: <IconMessages size={18} />,
   // },
-  // {
-  //   title: 'Apps',
-  //   label: '',
-  //   href: '/apps',
-  //   icon: <IconApps size={18} />,
-  // },
+  {
+    title: 'Users',
+    label: '',
+    href: '/users',
+    icon: <IconUsers size={18} />,
+  },
+  {
+    title: 'Upload Quality Projects',
+    label: '',
+    href: '/upload-quality-projects',
+    icon: <IconApps size={18} />,
+  },
   // {
   //   title: 'Authentication',
   //   label: '',
@@ -79,12 +87,7 @@ export const sidelinks: SideLink[] = [
   //     },
   //   ],
   // },
-  {
-    title: 'Users',
-    label: '',
-    href: '/users',
-    icon: <IconUsers size={18} />,
-  },
+
   // {
   //   title: 'Requests',
   //   label: '10',

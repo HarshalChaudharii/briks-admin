@@ -1,0 +1,15 @@
+export const requiredHeaders = [
+  'project',
+  'wbs_',
+  'description',
+  'severity',
+  'date_of_identification',
+  'identified_by',
+  'date_of_closure',
+  'closed_by',
+  'date_of_validation',
+  'validated_by',
+  'remark',
+  'name_of_contractor',
+  'closure_status',
+]
