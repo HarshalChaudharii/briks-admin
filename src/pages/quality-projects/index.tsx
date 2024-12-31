@@ -2,7 +2,6 @@ import { Layout } from '@/components/custom/layout'
 import ThemeSwitch from '@/components/theme-switch'
 import { UserNav } from '@/components/user-nav'
 import AddQualityProject from './add-quality-project'
-import { IconDownload } from '@tabler/icons-react'
 import { IMAGE_BASE_URL } from '@/api/apiUrl'
 import { DownloadIcon } from 'lucide-react'
 

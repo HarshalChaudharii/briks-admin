@@ -2,7 +2,6 @@ import {
   IconApps,
   IconChecklist,
   IconLayoutDashboard,
-  IconMessages,
   IconUsers,
 } from '@tabler/icons-react'
 

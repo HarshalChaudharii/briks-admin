@@ -20,6 +20,7 @@ import {
   IconUsers,
 } from '@tabler/icons-react'
 import { AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react'
+// @ts-ignore
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {

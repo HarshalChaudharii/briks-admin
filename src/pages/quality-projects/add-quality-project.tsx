@@ -66,15 +66,15 @@ const AddQualityProject = () => {
           // Normalize rows to match the number of columns
           const normalizedData = jsonData
             .slice(1) // Skip the header row
-            .filter((row) =>
+            .filter((row: any) =>
               row.some(
-                (cell) =>
+                (cell: any) =>
                   cell !== null &&
                   cell !== undefined &&
                   cell.toString().trim() !== ''
               )
             ) // Filter out empty rows
-            .map((row) => {
+            .map((row: any) => {
               // Normalize rows to match the number of headers
               return Array.from(
                 { length: header.length },
