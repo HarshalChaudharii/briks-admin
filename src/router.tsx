@@ -84,6 +84,20 @@ const router = createBrowserRouter([
         }),
       },
       {
+        path: 'quality-projects',
+        lazy: async () => ({
+          Component: (await import('@/pages/list-quality-project')).default,
+        }),
+      },
+      {
+        path: 'quality-project/:id',
+        lazy: async () => ({
+          Component: (
+            await import('@/pages/list-quality-project/quality-project')
+          ).default,
+        }),
+      },
+      {
         path: 'analysis',
         lazy: async () => ({
           Component: (await import('@/components/coming-soon')).default,

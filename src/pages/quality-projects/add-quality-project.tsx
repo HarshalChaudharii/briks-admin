@@ -14,7 +14,7 @@ import {
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from '@/hooks/use-toast'
-import { validateData, validateHeaders } from './utils/utils'
+import { validateHeaderNames, validateData } from './utils/utils'
 import { useMutation } from '@tanstack/react-query'
 import { BASE_URL } from '@/api/apiUrl'
 import axios from 'axios'
@@ -28,9 +28,7 @@ const AddQualityProject = () => {
 
   const onDropRejected = (rejectedFiles: FileRejection[]) => {
     const [file] = rejectedFiles
-
     setIsDragOver(false)
-
     toast({
       title: `${file.file.type} type is not supported.`,
       description: 'Please choose an Excel file instead.',
@@ -40,7 +38,6 @@ const AddQualityProject = () => {
 
   const onDropAccepted = async (acceptedFiles: File[]) => {
     const [file] = acceptedFiles
-
     setIsDragOver(false)
     setFileName(file.name)
 
@@ -50,47 +47,37 @@ const AddQualityProject = () => {
       const binaryStr = e.target?.result
       if (binaryStr) {
         const workbook = XLSX.read(binaryStr, { type: 'binary' })
-        const sheetName = workbook.SheetNames[0] // Get the first sheet
+        const sheetName = workbook.SheetNames[0]
         const sheet = workbook.Sheets[sheetName]
-        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) // Convert to 2D array
+        const jsonData = XLSX.utils.sheet_to_json(sheet) // array of objects
+        console.log('jsonData', jsonData)
 
         if (jsonData.length > 0) {
-          const header = jsonData[0] as string[] // First row as column headers
-          if (!validateHeaders(header)) {
-            setColumns([])
+          // Extract headers from first object's keys
+          const headers = Object.keys(jsonData[0] as object)
+
+          // Validate headers
+          if (!validateHeaderNames(headers)) {
+            return
+          }
+
+          // Validate rows by required fields
+          if (!validateData(jsonData, headers)) {
             setTableData([])
             return
           }
-          setColumns(header)
 
-          // Normalize rows to match the number of columns
-          const normalizedData = jsonData
-            .slice(1) // Skip the header row
-            .filter((row: any) =>
-              row.some(
-                (cell: any) =>
-                  cell !== null &&
-                  cell !== undefined &&
-                  cell.toString().trim() !== ''
-              )
-            ) // Filter out empty rows
-            .map((row: any) => {
-              // Normalize rows to match the number of headers
-              return Array.from(
-                { length: header.length },
-                (_, i) => row[i] || ''
-              )
-            })
-
-          // Validate data for required fields
-          if (!validateData(normalizedData, header)) {
-            setTableData([]) // Clear table data if validation fails
-            return
-          }
-          setTableData(normalizedData) // Set normalized data as table data
+          // If valid, set state
+          setTableData(jsonData)
+          setColumns(headers)
         }
       }
-      mutateValidateExcelData({ columns, tableData })
+
+      // Now run optional server-side validation
+      mutateValidateExcelData({
+        columns: Object.keys(tableData[0] || {}),
+        tableData,
+      })
     }
 
     reader.readAsBinaryString(file)
@@ -114,16 +101,16 @@ const AddQualityProject = () => {
     onSuccess: () => {
       toast({
         title: 'Success',
-        description: 'Quality project uploaded successfully.',
+        description: 'Validation succeeded!',
       })
     },
   })
 
   const { mutate: mutateUploadQualityProject } = useMutation({
-    mutationFn: async (data: { columns: string[]; tableData: any[] }) => {
+    mutationFn: async (allData: any[]) => {
       const response = await privatePostRequest(
         BASE_URL + '/quality-projects/upload-excel',
-        data
+        allData
       )
       return response.data
     },
@@ -146,7 +133,7 @@ const AddQualityProject = () => {
     <div className='container mx-auto px-4 py-8'>
       <Card className='mb-8'>
         <CardHeader>
-          <CardTitle>Upload Quality Project </CardTitle>
+          <CardTitle>Upload Quality Project</CardTitle>
         </CardHeader>
         <CardContent>
           <Dropzone
@@ -193,18 +180,16 @@ const AddQualityProject = () => {
           </Dropzone>
         </CardContent>
       </Card>
+
       <div className='mb-4 flex justify-end'>
-        {
-          // Add a button to upload the file
-          tableData.length > 0 && (
-            <button
-              className='w-20 rounded-md bg-blue-500 py-2 text-white'
-              onClick={() => mutateUploadQualityProject({ columns, tableData })}
-            >
-              Upload
-            </button>
-          )
-        }
+        {tableData.length > 0 && (
+          <button
+            className='w-20 rounded-md bg-blue-500 py-2 text-white'
+            onClick={() => mutateUploadQualityProject(tableData)}
+          >
+            Upload
+          </button>
+        )}
       </div>
 
       {tableData.length > 0 && (
@@ -228,8 +213,8 @@ const AddQualityProject = () => {
                   <TableBody>
                     {tableData.map((row, rowIndex) => (
                       <TableRow key={rowIndex}>
-                        {row.map((cell: any, cellIndex: number) => (
-                          <TableCell key={cellIndex}>{cell}</TableCell>
+                        {columns.map((column, colIndex) => (
+                          <TableCell key={colIndex}>{row[column]}</TableCell>
                         ))}
                       </TableRow>
                     ))}

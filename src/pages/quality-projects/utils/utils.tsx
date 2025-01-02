@@ -1,68 +1,57 @@
 import { toast } from '@/hooks/use-toast'
 import { requiredHeaders } from '../data/data'
 
-export const validateHeaders = (headers: string[]): boolean => {
-  const requiredWBSHeaders = requiredHeaders.filter((header) =>
-    header.startsWith('wbs_')
+export function validateHeaderNames(excelHeaders: string[]): boolean {
+  // Lowercase all actual Excel headers for case-insensitive comparison
+  const lowercaseExcelHeaders = excelHeaders.map((h) => h.toLowerCase())
+
+  // 1. Check normal headers (everything not "wbs_")
+  const normalRequired = requiredHeaders.filter((h) => h !== 'wbs_')
+  const missingNormalHeaders = normalRequired.filter(
+    (required) => !lowercaseExcelHeaders.includes(required.toLowerCase())
   )
 
-  // Validate regular required headers
-  const missingRegularHeaders = requiredHeaders
-    .filter((header) => !header.startsWith('wbs_'))
-    .filter(
-      (required) =>
-        !headers.some(
-          (header) => header.toLowerCase() === required.toLowerCase()
-        )
-    )
+  // 2. Check for at least one column starting with "wbs_"
+  const hasWBS = lowercaseExcelHeaders.some((h) => h.startsWith('wbs_'))
 
-  // Validate WBS headers
-  const missingWBSHeaders = requiredWBSHeaders.filter(
-    (required) =>
-      !headers.some((header) =>
-        header.toLowerCase().startsWith(required.toLowerCase())
-      )
-  )
+  if (missingNormalHeaders.length > 0 || !hasWBS) {
+    const errors: string[] = []
 
-  if (missingRegularHeaders.length > 0 || missingWBSHeaders.length > 0) {
-    const errorMessages = []
-
-    if (missingRegularHeaders.length > 0) {
-      errorMessages.push(
-        `Missing required headers: ${missingRegularHeaders.join(', ')}`
+    if (missingNormalHeaders.length > 0) {
+      errors.push(
+        `Missing required headers: ${missingNormalHeaders.join(', ')}`
       )
     }
 
-    if (missingWBSHeaders.length > 0) {
-      errorMessages.push(
-        `Missing headers starting with "wbs_": ${missingWBSHeaders.join(', ')}`
-      )
+    if (!hasWBS) {
+      errors.push('Missing any header that starts with "wbs_"')
     }
 
     toast({
       title: 'Validation Error',
-      description: errorMessages.join('. '),
+      description: errors.join('. '),
       variant: 'destructive',
     })
-
     return false
   }
 
   return true
 }
-
 export const validateData = (data: any[], columns: string[]) => {
-  // Fields to validate for non-null values
+  // Fields to validate for non-null values in each row object
   const requiredDataFields = ['identified_by', 'remark', 'closure_status']
 
-  // Get the indices of the required fields
-  const fieldIndices = requiredDataFields.map((field) => columns.indexOf(field))
-  // Check each row for empty or null values in required fields
+  // We filter out rows that are missing any required field
   const invalidRows = data.filter((row) =>
-    fieldIndices.some(
-      (index) =>
-        index !== -1 && (!row[index] || String(row[index]).trim() === '')
-    )
+    requiredDataFields.some((field) => {
+      // Skip if the column isn't even present
+      if (!columns.includes(field)) {
+        return false
+      }
+      // Check if the value is empty or missing
+      const value = row[field]
+      return !value || String(value).trim() === ''
+    })
   )
 
   if (invalidRows.length > 0) {

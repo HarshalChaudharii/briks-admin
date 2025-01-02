@@ -1,6 +1,7 @@
 import {
   IconApps,
   IconChecklist,
+  IconHexagonNumber3,
   IconLayoutDashboard,
   IconUsers,
 } from '@tabler/icons-react'
@@ -41,6 +42,12 @@ export const sidelinks: SideLink[] = [
     label: '',
     href: '/users',
     icon: <IconUsers size={18} />,
+  },
+  {
+    title: 'Quality Projects',
+    label: '',
+    href: '/quality-projects',
+    icon: <IconChecklist size={18} />,
   },
   {
     title: 'Upload Quality Projects',
