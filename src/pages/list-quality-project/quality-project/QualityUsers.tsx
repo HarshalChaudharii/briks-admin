@@ -1,5 +1,5 @@
 import { privateGetRequest } from '@/api/apiFunctions'
-import { QUALITY_USERS } from '@/api/apiUrl'
+import { IMAGE_BASE_URL, QUALITY_USERS } from '@/api/apiUrl'
 import { Layout } from '@/components/custom/layout'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
@@ -25,11 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import UploadUser from './upload/UploadUser'
+import { DownloadLink } from '@/pages/quality-projects/components/DownloadLink'
 
 const roleOptions = [
   { value: 'All', label: 'All' },
   //   { value: 'ADMIN', label: 'Admin' },
-  //   { value: 'MANAGER', label: 'Manager' },
+  { value: 'MANAGER', label: 'Manager' },
+  { value: 'ENGINEER', label: 'Engineer' },
   { value: 'QUALITY', label: 'Quality Engineer' },
   { value: 'SITE_ENGINEER', label: 'Site Engineer' },
   { value: 'VALIDATOR', label: 'Validator' },
@@ -77,13 +80,14 @@ const QualityUsers = () => {
 
   return (
     <Layout>
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center'>
-          <h1 className='text-xl font-bold'>Quality Users</h1>
-        </div>
+      <div className='p-5'>
+        <DownloadLink
+          href={`${IMAGE_BASE_URL}/exports/sample_quality_Project/sample_user.xlsx`}
+          label='Download Sample'
+        />
       </div>
-
-      <div className='mb-6 mt-10 flex items-center justify-between gap-4'>
+      <UploadUser />
+      <div className='mb-6  flex items-center justify-between gap-4'>
         <div className='relative flex-1'>
           <SearchIcon className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
           <Input

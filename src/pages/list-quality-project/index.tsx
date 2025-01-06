@@ -121,6 +121,7 @@ const index = () => {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Project</TableHead>
+                <TableHead>View</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

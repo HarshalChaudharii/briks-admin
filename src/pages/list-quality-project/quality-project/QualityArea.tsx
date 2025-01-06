@@ -52,7 +52,7 @@ const QualityArea = () => {
     setSearchTerm(e.target.value)
     setCurrentPage(1)
   }
-  console.log('serachTerm', searchTerm)
+
   const handlePageSizeChange = (size: string) => {
     setPageSize(Number(size))
     setCurrentPage(1)
@@ -61,15 +61,9 @@ const QualityArea = () => {
   const handlePageChange = ({ selected }: { selected: number }): void => {
     setCurrentPage(selected + 1)
   }
-  console.log('areaByProjectId', areaByProjectId)
+
   return (
     <Layout>
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center'>
-          <h1 className='text-xl font-bold'>Quality Area</h1>
-        </div>
-      </div>
-
       <div className='mb-6 mt-10 flex items-center justify-between gap-4'>
         <div className='relative flex-1'>
           <SearchIcon className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />

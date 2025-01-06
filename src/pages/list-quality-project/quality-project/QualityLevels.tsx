@@ -18,49 +18,12 @@ import { SearchIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import ReactPaginate from 'react-paginate'
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-
-const roleOptions = [
-  { value: 'All', label: 'All' },
-  //   { value: 'ADMIN', label: 'Admin' },
-  //   { value: 'MANAGER', label: 'Manager' },
-  { value: 'QUALITY', label: 'Quality Engineer' },
-  { value: 'SITE_ENGINEER', label: 'Site Engineer' },
-  { value: 'VALIDATOR', label: 'Validator' },
-]
-
-interface Level {
-  id: number
-  name: string
-  type: string
-  description: string
-}
-
-interface QualityLevel {
-  id: number
-  name: string
-  type: string
-  description: string
-  projectId: number
-  parentId: number | null
-  hasChildren: boolean
-  level1: Level | null
-  level2: Level | null
-  level3: Level | null
-}
-
 const QualityLevels = () => {
   const { id } = useParams<{ id: string }>()
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [selectedRole, setSelectedRole] = useState<string>()
+  const [selectedRole, _] = useState<string>()
 
   const { data: levelByProjectId } = useQuery({
     queryKey: [
@@ -78,7 +41,6 @@ const QualityLevels = () => {
       return response.data
     },
   })
-  console.log('levelByProjectId', id)
   const data = levelByProjectId?.data ?? []
   const pagination = levelByProjectId?.pagination ?? {
     currentPage: 1,
@@ -90,7 +52,7 @@ const QualityLevels = () => {
     setSearchTerm(e.target.value)
     setCurrentPage(1)
   }
-  console.log('serachTerm', searchTerm)
+
   // @ts-ignore
   const handlePageSizeChange = (size: string) => {
     setPageSize(Number(size))
@@ -100,24 +62,14 @@ const QualityLevels = () => {
   const handlePageChange = ({ selected }: { selected: number }): void => {
     setCurrentPage(selected + 1)
   }
-  const filteredData = data.filter((item: QualityLevel) => {
-    if (item.type === 'level_3') {
-      return item.level1 && item.level2 && item.name && item.description
-    }
-    if (item.type === 'level_2') {
-      return item.level2 && item.name
-    }
-    return false
-  })
-  console.log('levelByProjectId', levelByProjectId)
+
+  const filteredData = data.filter(
+    (item: any) =>
+      item.type === 'level3' && item.level1 && item.level2 && item.level3
+  )
+
   return (
     <Layout>
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center'>
-          <h1 className='text-xl font-bold'>Quality Users</h1>
-        </div>
-      </div>
-
       <div className='mb-6 mt-10 flex items-center justify-between gap-4'>
         <div className='relative flex-1'>
           <SearchIcon className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
@@ -129,23 +81,7 @@ const QualityLevels = () => {
             className='pl-8'
           />
         </div>
-        <div className='flex items-center gap-4'>
-          <Select
-            value={selectedRole}
-            onValueChange={(value) => setSelectedRole(value)}
-          >
-            <SelectTrigger className='w-[180px]'>
-              <SelectValue placeholder='Select Role' />
-            </SelectTrigger>
-            <SelectContent>
-              {roleOptions.map((role) => (
-                <SelectItem key={role.value} value={role.value}>
-                  {role.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+
         {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant='outline' className='shrink-0'>
@@ -184,20 +120,12 @@ const QualityLevels = () => {
           </TableHeader>
 
           <TableBody>
-            {filteredData.map((item: QualityLevel, index: number) => (
-              <TableRow key={index}>
+            {filteredData.map((item: any) => (
+              <TableRow key={item.id}>
                 <TableCell>{item.level1?.name || ''}</TableCell>
-                <TableCell>
-                  {item.type === 'level_3'
-                    ? item.level2?.name
-                    : item.type === 'level_2'
-                      ? item.name
-                      : ''}
-                </TableCell>
-                <TableCell>
-                  {item.type === 'level_3' ? item.name : ''}
-                </TableCell>
-                <TableCell>{item.description}</TableCell>
+                <TableCell>{item.level2?.name || ''}</TableCell>
+                <TableCell>{item.level3?.name || ''}</TableCell>
+                <TableCell>{item.description || ''}</TableCell>
               </TableRow>
             ))}
           </TableBody>

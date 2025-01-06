@@ -1,7 +1,6 @@
 import {
   IconApps,
   IconChecklist,
-  IconHexagonNumber3,
   IconLayoutDashboard,
   IconUsers,
 } from '@tabler/icons-react'
