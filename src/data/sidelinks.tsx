@@ -54,6 +54,7 @@ export const sidelinks: SideLink[] = [
     href: '/upload-quality-projects',
     icon: <IconApps size={18} />,
   },
+
   // {
   //   title: 'Authentication',
   //   label: '',
