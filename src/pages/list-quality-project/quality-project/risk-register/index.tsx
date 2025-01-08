@@ -43,6 +43,7 @@ const RiskRegister = () => {
   const { id } = useParams<{ id: string }>()
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  // @ts-ignore
   const [pageSize, setPageSize] = useState(10)
 
   const { data: queryData, isLoading } = useQuery({
