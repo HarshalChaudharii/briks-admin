@@ -17,7 +17,6 @@ import { toast } from '@/hooks/use-toast'
 import { validateHeaderNames, validateData } from './utils/utils'
 import { useMutation } from '@tanstack/react-query'
 import { BASE_URL } from '@/api/apiUrl'
-import axios from 'axios'
 import { privatePostRequest } from '@/api/apiFunctions'
 
 const AddQualityProject = () => {
@@ -74,37 +73,37 @@ const AddQualityProject = () => {
       }
 
       // Now run optional server-side validation
-      mutateValidateExcelData({
-        columns: Object.keys(tableData[0] || {}),
-        tableData,
-      })
+      // mutateValidateExcelData({
+      //   columns: Object.keys(tableData[0] || {}),
+      //   tableData,
+      // })
     }
 
     reader.readAsBinaryString(file)
   }
 
-  const { mutate: mutateValidateExcelData } = useMutation({
-    mutationFn: async (data: { columns: string[]; tableData: any[] }) => {
-      const response = await axios.post(
-        BASE_URL + '/user/validate-excel-data',
-        data
-      )
-      return response.data
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.response.data.error,
-        variant: 'destructive',
-      })
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Success',
-        description: 'Validation succeeded!',
-      })
-    },
-  })
+  // const { mutate: mutateValidateExcelData } = useMutation({
+  //   mutationFn: async (data: { columns: string[]; tableData: any[] }) => {
+  //     const response = await axios.post(
+  //       BASE_URL + '/user/validate-excel-data',
+  //       data
+  //     )
+  //     return response.data
+  //   },
+  //   onError: (error: any) => {
+  //     toast({
+  //       title: 'Error',
+  //       description: error.response.data.error,
+  //       variant: 'destructive',
+  //     })
+  //   },
+  //   onSuccess: () => {
+  //     toast({
+  //       title: 'Success',
+  //       description: 'Validation succeeded!',
+  //     })
+  //   },
+  // })
 
   const { mutate: mutateUploadQualityProject } = useMutation({
     mutationFn: async (allData: any[]) => {

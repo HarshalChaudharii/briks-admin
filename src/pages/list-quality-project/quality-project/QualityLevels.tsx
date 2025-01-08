@@ -17,6 +17,24 @@ import { useState } from 'react'
 import { SearchIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import ReactPaginate from 'react-paginate'
+interface Level {
+  id: number
+  name: string
+  type: string
+  description: string
+}
+interface QualityLevel {
+  id: number
+  name: string
+  type: string
+  description: string
+  projectId: number
+  parentId: number | null
+  hasChildren: boolean
+  level1: Level | null
+  level2: Level | null
+  level3: Level | null
+}
 
 const QualityLevels = () => {
   const { id } = useParams<{ id: string }>()
@@ -63,11 +81,6 @@ const QualityLevels = () => {
     setCurrentPage(selected + 1)
   }
 
-  const filteredData = data.filter(
-    (item: any) =>
-      item.type === 'level3' && item.level1 && item.level2 && item.level3
-  )
-
   return (
     <Layout>
       <div className='mb-6 mt-10 flex items-center justify-between gap-4'>
@@ -95,12 +108,12 @@ const QualityLevels = () => {
           </TableHeader>
 
           <TableBody>
-            {filteredData.map((item: any) => (
+            {data.map((item: QualityLevel) => (
               <TableRow key={item.id}>
-                <TableCell>{item.level1?.name || ''}</TableCell>
-                <TableCell>{item.level2?.name || ''}</TableCell>
-                <TableCell>{item.level3?.name || ''}</TableCell>
-                <TableCell>{item.description || ''}</TableCell>
+                <TableCell>{item.id}</TableCell>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.type}</TableCell>
+                <TableCell>{item.description}</TableCell>
               </TableRow>
             ))}
           </TableBody>

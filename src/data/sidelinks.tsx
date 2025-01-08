@@ -1,5 +1,4 @@
 import {
-  IconApps,
   IconChecklist,
   IconLayoutDashboard,
   IconUsers,
@@ -48,12 +47,12 @@ export const sidelinks: SideLink[] = [
     href: '/quality-projects',
     icon: <IconChecklist size={18} />,
   },
-  {
-    title: 'Upload Quality Projects',
-    label: '',
-    href: '/upload-quality-projects',
-    icon: <IconApps size={18} />,
-  },
+  // {
+  //   title: 'Upload Quality Projects',
+  //   label: '',
+  //   href: '/upload-quality-projects',
+  //   icon: <IconApps size={18} />,
+  // },
 
   // {
   //   title: 'Authentication',
