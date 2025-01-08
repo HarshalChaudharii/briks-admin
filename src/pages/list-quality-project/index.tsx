@@ -76,6 +76,9 @@ const index = () => {
             <h2 className='text-2xl font-bold tracking-tight'>Projects</h2>
             <p className='text-muted-foreground'>List of quality projects</p>
           </div>
+          <Button asChild>
+            <Link to='/upload-quality-projects'>Upload Quality Project</Link>
+          </Button>
         </div>
         <div className='mb-10 flex flex-col gap-4'>
           <div className='flex items-center gap-4'>

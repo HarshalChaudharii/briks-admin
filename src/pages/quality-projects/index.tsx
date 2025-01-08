@@ -25,6 +25,25 @@ const index = () => {
             <p className='text-muted-foreground'>
               Add a new quality project to the list
             </p>
+            <button
+              onClick={() => window.history.back()}
+              className='mt-2 flex items-center text-sm text-muted-foreground hover:text-primary'
+            >
+              <svg
+                className='mr-2 h-4 w-4'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M10 19l-7-7m0 0l7-7m-7 7h18'
+                />
+              </svg>
+              Back
+            </button>
           </div>
           <div className='p-5'>
             <DownloadLink
