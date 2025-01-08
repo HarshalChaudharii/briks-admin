@@ -117,7 +117,7 @@ const UploadUser = () => {
             {({ getRootProps, getInputProps }) => (
               <div
                 className={cn(
-                  'flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 transition-colors duration-200 ease-in-out',
+                  'flex  w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-10 transition-colors duration-200 ease-in-out',
                   {
                     'border-blue-500 bg-blue-50': isDragOver,
                   }

@@ -97,6 +97,7 @@ const router = createBrowserRouter([
           ).default,
         }),
       },
+
       {
         path: 'analysis',
         lazy: async () => ({
