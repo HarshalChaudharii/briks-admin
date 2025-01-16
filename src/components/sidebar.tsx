@@ -26,7 +26,7 @@ export default function Sidebar({
       document.body.classList.remove('overflow-hidden')
     }
   }, [navOpened])
-
+  // console.log('isCollapsed', isCollapsed)
   return (
     <aside
       className={cn(

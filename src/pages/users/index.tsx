@@ -27,15 +27,24 @@ import ReactPaginate from 'react-paginate'
 import ThemeSwitch from '@/components/theme-switch'
 import { UserNav } from '@/components/user-nav'
 import { privateGetRequest } from '@/api/apiFunctions'
-
+import { UsersActionDialog } from '@/pages/users/components/users-action-dialog'
+import { User } from '@/features/data/schema'
+import { IconEdit, IconTrash, IconUserPlus } from '@tabler/icons-react'
+import useDialogState from '@/hooks/use-dialog-state'
+import { UsersDeleteDialog } from './components/users-delete-dialog'
+import UpdateUserStatus from './components/UpdateUserStatus'
+import { callTypes } from '@/data/data'
+import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 const UsersListPage = () => {
-  interface User {
-    id: number
-    name: string
-    username: string
-    role: string
-  }
-
+  // interface User {
+  //   id: number
+  //   name: string
+  //   username: string
+  //   role: string
+  // }
+  type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'status'
+  // const [open, setOpen] = useDialogState<UsersDialogType>(null)
   const [data, setData] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -47,6 +56,8 @@ const UsersListPage = () => {
     remainingPages: 0,
   })
 
+  const [open, setOpen] = useDialogState<UsersDialogType>(null)
+  const [currentRow, setCurrentRow] = useState<User | null>(null)
   const getUsersList = async () => {
     try {
       const response = await privateGetRequest(
@@ -90,6 +101,7 @@ const UsersListPage = () => {
   const handlePageChange = (selectedPage: SelectedPage): void => {
     setCurrentPage(selectedPage.selected + 1) // react-paginate uses 0-based index
   }
+  // const setOpen = (type: string) => {}
   return (
     <Layout>
       <Layout.Header>
@@ -99,6 +111,13 @@ const UsersListPage = () => {
         </div>
       </Layout.Header>
       <Layout.Body>
+        <UsersActionDialog
+          currentRow={currentRow}
+          key='user-add'
+          open={open === 'add'}
+          onOpenChange={() => setOpen('add')}
+          getUsersList={getUsersList}
+        />
         <div className='flex flex-col gap-4'>
           <div className='flex items-center gap-4'>
             <div className='relative flex-1'>
@@ -112,6 +131,9 @@ const UsersListPage = () => {
                 className='pl-8'
               />
             </div>
+            <Button className='space-x-1' onClick={() => setOpen('add')}>
+              <span>Add User</span> <IconUserPlus size={18} />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant='outline' className='shrink-0'>
@@ -141,6 +163,7 @@ const UsersListPage = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
           <Card>
             <Table>
               <TableHeader>
@@ -148,18 +171,61 @@ const UsersListPage = () => {
                   <TableHead className='cursor-pointer'>ID</TableHead>
                   <TableHead className='cursor-pointer'>Name</TableHead>
                   <TableHead className='cursor-pointer'>Username</TableHead>
+                  <TableHead className='cursor-pointer'>Status</TableHead>
                   <TableHead className='cursor-pointer'>Role</TableHead>
+                  <TableHead className='sr-only'>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{item.id}</TableCell>
-                    <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.username}</TableCell>
-                    <TableCell>{item.role}</TableCell>
-                  </TableRow>
-                ))}
+                {data.map((item, index) => {
+                  const badgeColor = item?.status
+                    ? callTypes.get(item.status)
+                    : ''
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell>{item.username}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant='outline'
+                          className={cn(
+                            `capitalize ${badgeColor} cursor-pointer`
+                          )}
+                          onClick={() => {
+                            setOpen('status')
+                            setCurrentRow(item)
+                          }}
+                        >
+                          {item.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{item.role}</TableCell>
+                      <TableCell className='flex items-center space-x-4'>
+                        <span>
+                          <IconEdit
+                            size={20}
+                            className='cursor-pointer'
+                            onClick={() => {
+                              setOpen('edit')
+                              setCurrentRow(item)
+                            }}
+                          />
+                        </span>
+                        <span>
+                          <IconTrash
+                            size={20}
+                            className='cursor-pointer text-red-500'
+                            onClick={() => {
+                              setOpen('delete')
+                              setCurrentRow(item)
+                            }}
+                          />
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
             <CardFooter className='flex items-center justify-between border-t pt-6'>
@@ -168,37 +234,7 @@ const UsersListPage = () => {
                 {Math.min(currentPage * pageSize, pagination.totalItems)} of{' '}
                 {pagination.totalItems} results
               </div>
-              {/* <div className='flex items-center gap-2'>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  disabled={currentPage === 1}
-                  onClick={() => handlePageChange(currentPage - 1)}
-                >
-                  Previous
-                </Button>
-                {Array.from(
-                  { length: pagination.totalPages },
-                  (_, i) => i + 1
-                ).map((page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? 'solid' : 'outline'}
-                    size='sm'
-                    onClick={() => handlePageChange(page)}
-                  >
-                    {page}
-                  </Button>
-                ))}
-                <Button
-                  variant='outline'
-                  size='sm'
-                  disabled={currentPage === pagination.totalPages}
-                  onClick={() => handlePageChange(currentPage + 1)}
-                >
-                  Next
-                </Button>
-              </div> */}
+
               <ReactPaginate
                 previousLabel={'Previous'}
                 nextLabel={'Next'}
@@ -221,30 +257,73 @@ const UsersListPage = () => {
             </CardFooter>
           </Card>
         </div>
+        {currentRow && (
+          <>
+            <UsersActionDialog
+              key={`user-edit-${currentRow.id}`}
+              open={open === 'edit'}
+              onOpenChange={() => {
+                setOpen('edit')
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+              }}
+              currentRow={currentRow}
+              getUsersList={getUsersList}
+            />
+
+            <UsersDeleteDialog
+              key={`user-delete-${currentRow.id}`}
+              open={open === 'delete'}
+              onOpenChange={() => {
+                setOpen('delete')
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+              }}
+              currentRow={currentRow}
+              getUsersList={getUsersList}
+            />
+          </>
+        )}
+        <div>
+          <UpdateUserStatus
+            key={`user-status-${currentRow?.id}`}
+            open={open === 'status'}
+            onOpenChange={() => {
+              setOpen('status')
+              setTimeout(() => {
+                setCurrentRow(null)
+              }, 500)
+            }}
+            currentRow={currentRow}
+            getUsersList={getUsersList}
+          />
+        </div>
       </Layout.Body>
     </Layout>
   )
 }
-const topNav = [
-  {
-    title: 'Overview',
-    href: 'dashboard/overview',
-    isActive: true,
-  },
-  {
-    title: 'Customers',
-    href: 'dashboard/customers',
-    isActive: false,
-  },
-  {
-    title: 'Products',
-    href: 'dashboard/products',
-    isActive: false,
-  },
-  {
-    title: 'Settings',
-    href: 'dashboard/settings',
-    isActive: false,
-  },
-]
+// const topNav = [
+//   {
+//     title: 'Overview',
+//     href: 'dashboard/overview',
+//     isActive: true,
+//   },
+//   {
+//     title: 'Customers',
+//     href: 'dashboard/customers',
+//     isActive: false,
+//   },
+//   {
+//     title: 'Products',
+//     href: 'dashboard/products',
+//     isActive: false,
+//   },
+//   {
+//     title: 'Settings',
+//     href: 'dashboard/settings',
+//     isActive: false,
+//   },
+// ]
 export default UsersListPage
