@@ -100,9 +100,9 @@ const QualityLevels = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Level 1</TableHead>
-              <TableHead>Level 2</TableHead>
-              <TableHead>Level 3</TableHead>
+              <TableHead>ID</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Level</TableHead>
               <TableHead>Description</TableHead>
             </TableRow>
           </TableHeader>
