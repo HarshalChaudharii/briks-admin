@@ -32,6 +32,8 @@ export const userTypes = [
     value: 'MANAGER',
     icon: IconCash,
   },
+  { label: 'Site Engineer', value: 'SITE_ENGINEER', icon: IconCash },
+  { label: 'Validator', value: 'VALIDATOR', icon: IconCash },
   {
     label: 'Engineer',
     value: 'ENGINEER',

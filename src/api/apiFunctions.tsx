@@ -95,7 +95,11 @@ export const privatePostRequest = async (
   data: any
 ): Promise<any> => {
   try {
-    const response = await axiosPrivate.post(url, data)
+    const token = Cookies.get('token')
+    const headers: PrivateGetRequestHeaders = {
+      Authorization: `Bearer ${token}`,
+    }
+    const response = await axiosPrivate.post(url, data, { headers })
     return response
   } catch (error) {
     handleError(error as ErrorResponse)

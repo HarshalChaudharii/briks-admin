@@ -35,12 +35,25 @@ export const sidelinks: SideLink[] = [
   //   href: '/chats',
   //   icon: <IconMessages size={18} />,
   // },
+  {
+    title: 'Users',
+    label: '',
+    href: '/users',
+    icon: <IconUsers size={18} />,
+  },
+  {
+    title: 'Quality Projects',
+    label: '',
+    href: '/quality-projects',
+    icon: <IconChecklist size={18} />,
+  },
   // {
-  //   title: 'Apps',
+  //   title: 'Upload Quality Projects',
   //   label: '',
-  //   href: '/apps',
+  //   href: '/upload-quality-projects',
   //   icon: <IconApps size={18} />,
   // },
+
   // {
   //   title: 'Authentication',
   //   label: '',
@@ -79,12 +92,7 @@ export const sidelinks: SideLink[] = [
   //     },
   //   ],
   // },
-  {
-    title: 'Users',
-    label: '',
-    href: '/users',
-    icon: <IconUsers size={18} />,
-  },
+
   // {
   //   title: 'Requests',
   //   label: '10',

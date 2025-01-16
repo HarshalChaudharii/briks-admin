@@ -1,3 +1,4 @@
+// @ts-ignore
 import { Link } from '@tanstack/react-router'
 import { IconMenu } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
