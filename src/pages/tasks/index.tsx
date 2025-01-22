@@ -1,4 +1,4 @@
-import { ArrowUp, Image, SearchIcon } from 'lucide-react'
+import { ArrowDown, ArrowUp, Image, SearchIcon } from 'lucide-react'
 import { BASE_URL, IMAGE_BASE_URL } from '@/api/apiUrl'
 import { Card, CardFooter } from '@/components/ui/card'
 import {
@@ -36,7 +36,10 @@ import { UserNav } from '@/components/user-nav'
 import moment from 'moment'
 import { privateGetRequest } from '@/api/apiFunctions'
 import { useSearchParams } from 'react-router-dom'
-
+import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import Cookies from 'js-cookie'
+import axios from 'axios'
 export default function Tasks() {
   interface ProjectItem {
     id: number
@@ -52,12 +55,16 @@ export default function Tasks() {
     photos: { url: string; id: number }[]
     status: string
     hasNext?: boolean
+    projectWBSId?: string
   }
 
   const [data, setData] = useState<ProjectItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null
+  )
   // const [view, setView] = useState('PROJECT')
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -76,9 +83,7 @@ export default function Tasks() {
     [searchParams]
   )
 
-  console.log('currentId', currentWbsId)
   const hasWbsId = !!currentWbsId // Boolean to determine if we're in a WBS view
-
   // Function to fetch all project data
   const getAllProjectList = useCallback(async () => {
     try {
@@ -149,6 +154,7 @@ export default function Tasks() {
 
   // Handle back navigation to project list
   const handleBackClick = useCallback(() => {
+    setSelectedProjectId(null)
     setSearchParams({ view: 'PROJECT', wbsId: '' }, { replace: true })
   }, [setSearchParams])
 
@@ -166,8 +172,10 @@ export default function Tasks() {
   // Function to navigate to a WBS node (push wbsId to URL)
 
   const handleRowClick = useCallback(
-    (wbsId: string, hasNext: boolean) => {
-      console.log("I'm here", wbsId)
+    (wbsId: string, hasNext: boolean, projectId?: number) => {
+      if (projectId) {
+        setSelectedProjectId(projectId)
+      }
       if (hasNext === true) {
         getAllWbsList(wbsId)
       } else {
@@ -201,6 +209,39 @@ export default function Tasks() {
     setCurrentPage(1)
   }
 
+  const { mutate: downloadExcel, isLoading } = useMutation({
+    mutationFn: async (projectId: number) => {
+      const token = Cookies.get('token')
+      const response = await axios.get(
+        `${BASE_URL}/projects/download-excel/${projectId}`,
+        {
+          responseType: 'blob',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      return response.data // Return just the data
+    },
+    onSuccess: (data) => {
+      // Create blob with correct MIME type
+      const blob = new Blob([data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'projects.xlsx')
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    },
+    onError: () => {
+      toast.error('Failed to download excel file')
+    },
+  })
+  console.log('selectedProjectId', selectedProjectId)
   return (
     <Layout>
       {/* ===== Top Heading ===== */}
@@ -275,26 +316,67 @@ export default function Tasks() {
                         Plan End Date
                       </TableHead>
                     </TableRow>
+                    <TableHead className='cursor-pointer'>Actions</TableHead>
                   </TableHeader>
                   <TableBody>
                     {data.map((item, index) => (
                       <TableRow
                         key={index}
                         // @ts-ignore
-                        onClick={() => handleRowClick(item.projectWBSId, true)}
+
                         className='cursor-pointer'
                       >
-                        <TableCell>{item.id}</TableCell>
-                        <TableCell>{item.name}</TableCell>
-                        <TableCell>
+                        <TableCell
+                          onClick={() =>
+                            item.projectWBSId &&
+                            handleRowClick(item.projectWBSId, true, item.id)
+                          }
+                        >
+                          {item.id}
+                        </TableCell>
+                        <TableCell
+                          onClick={() =>
+                            item.projectWBSId &&
+                            handleRowClick(item.projectWBSId, true, item.id)
+                          }
+                        >
+                          {item.name}
+                        </TableCell>
+                        <TableCell
+                          onClick={() =>
+                            item.projectWBSId &&
+                            handleRowClick(item.projectWBSId, true, item.id)
+                          }
+                        >
                           {moment(item.plannedStartDate).format('DD MMM YYYY')}
                         </TableCell>
-                        <TableCell>
+                        <TableCell
+                          onClick={() =>
+                            item.projectWBSId &&
+                            handleRowClick(item.projectWBSId, true, item.id)
+                          }
+                        >
                           {item.plannedEndDate === null
                             ? 'N/A'
                             : moment(item.plannedEndDate).format(
                                 'MMMM Do YYYY'
                               )}
+                        </TableCell>
+                        <TableCell className='py-2'>
+                          <Button
+                            onClick={() => downloadExcel(item.id)}
+                            disabled={isLoading}
+                            size='sm'
+                            variant='ghost'
+                            className='h-8'
+                          >
+                            {
+                              <div className='flex items-center gap-2'>
+                                <ArrowDown className='h-4 w-4' />{' '}
+                                <span>Donwnlod Excel</span>
+                              </div>
+                            }
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
