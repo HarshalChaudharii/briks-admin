@@ -1,20 +1,17 @@
 import { toast } from '@/hooks/use-toast'
 
 const REQUIRED_HEADERS = [
-  'Project',
-  'Name',
-  'User_Name',
-  'Password',
-  'Role',
-] as const
-
-const VALID_ROLES = [
-  'QUALITY',
-  'ADMIN',
-  'ENGINEER',
-  'SITE_ENGINEER',
-  'VALIDATOR',
-  'RISK_MANAGER',
+  'projectMilestone',
+  'description',
+  'probability',
+  'impact',
+  'pxi',
+  'actionPlan',
+  'rca',
+  'riskStrategy',
+  'riskOwner',
+  'urgency',
+  'plannedClosureDate',
 ] as const
 
 // Add validation functions
@@ -41,10 +38,7 @@ export const validateData = (data: any[]): boolean => {
       (header) => !row[header] || row[header].toString().trim() === ''
     )
 
-    // Check for valid role
-    const hasInvalidRole = !VALID_ROLES.includes(row.Role)
-
-    return hasEmptyFields || hasInvalidRole
+    return hasEmptyFields
   })
 
   if (invalidRows.length > 0) {

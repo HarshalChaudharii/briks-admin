@@ -1,5 +1,5 @@
 import { privateGetRequest } from '@/api/apiFunctions'
-import { GET_RISK_REGISTER } from '@/api/apiUrl'
+import { GET_RISK_REGISTER, IMAGE_BASE_URL } from '@/api/apiUrl'
 import { Layout } from '@/components/custom/layout'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
@@ -17,6 +17,8 @@ import { useState } from 'react'
 import { SearchIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import ReactPaginate from 'react-paginate'
+import UploadRisk from './upload'
+import { DownloadLink } from '@/pages/quality-projects/components/DownloadLink'
 
 interface RiskData {
   id: number
@@ -74,6 +76,13 @@ const RiskRegister = () => {
 
   return (
     <Layout>
+      <div className='p-5'>
+        <DownloadLink
+          href={`${IMAGE_BASE_URL}/exports/sample_quality_Project/bricks-risk-sample.xlsx`}
+          label='Download Sample'
+        />
+      </div>
+      <UploadRisk />
       <div className='mb-6 mt-10 flex items-center justify-between gap-4'>
         <div className='relative flex-1'>
           <SearchIcon className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
