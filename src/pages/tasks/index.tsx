@@ -29,17 +29,18 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/custom/button'
+import Cookies from 'js-cookie'
 import { Input } from '@/components/ui/input'
 import { Layout } from '@/components/custom/layout'
 import ThemeSwitch from '@/components/theme-switch'
 import { UserNav } from '@/components/user-nav'
+import axios from 'axios'
 import moment from 'moment'
 import { privateGetRequest } from '@/api/apiFunctions'
-import { useSearchParams } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import Cookies from 'js-cookie'
-import axios from 'axios'
+import { useMutation } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
+
 export default function Tasks() {
   interface ProjectItem {
     id: number
@@ -210,10 +211,10 @@ export default function Tasks() {
   }
 
   const { mutate: downloadExcel, isLoading } = useMutation({
-    mutationFn: async (projectId: number) => {
+    mutationFn: async ({ id, name }: { id: number; name: string }) => {
       const token = Cookies.get('token')
       const response = await axios.get(
-        `${BASE_URL}/projects/download-excel/${projectId}`,
+        `${BASE_URL}/projects/download-excel/${id}`,
         {
           responseType: 'blob',
           headers: {
@@ -221,9 +222,9 @@ export default function Tasks() {
           },
         }
       )
-      return response.data // Return just the data
+      return { data: response.data, name } // Return just the data
     },
-    onSuccess: (data) => {
+    onSuccess: ({ data, name }) => {
       // Create blob with correct MIME type
       const blob = new Blob([data], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -231,7 +232,7 @@ export default function Tasks() {
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', 'projects.xlsx')
+      link.setAttribute('download', `${name}.xlsx`)
       document.body.appendChild(link)
       link.click()
       link.remove()
@@ -364,7 +365,9 @@ export default function Tasks() {
                         </TableCell>
                         <TableCell className='py-2'>
                           <Button
-                            onClick={() => downloadExcel(item.id)}
+                            onClick={() =>
+                              downloadExcel({ id: item.id, name: item.name })
+                            }
                             disabled={isLoading}
                             size='sm'
                             variant='ghost'

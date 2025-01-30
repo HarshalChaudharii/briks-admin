@@ -15,6 +15,7 @@ const VALID_ROLES = [
   'SITE_ENGINEER',
   'VALIDATOR',
   'RISK_MANAGER',
+  'MANAGER',
 ] as const
 
 // Add validation functions
