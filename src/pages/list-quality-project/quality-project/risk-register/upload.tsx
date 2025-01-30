@@ -92,6 +92,8 @@ const UploadRisk = () => {
           impact: parseInt(data.impact),
           pxi: parseInt(data.pxi),
           plannedClosureDate: new Date(data.plannedClosureDate),
+          actionPlan: data.actionPlan || " ",
+          rca: data.rca || " "
         }))
       )
       return response.data

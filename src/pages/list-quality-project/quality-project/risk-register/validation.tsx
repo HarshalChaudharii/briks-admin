@@ -6,8 +6,6 @@ const REQUIRED_HEADERS = [
   'probability',
   'impact',
   'pxi',
-  'actionPlan',
-  'rca',
   'riskStrategy',
   'riskOwner',
   'urgency',
