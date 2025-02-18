@@ -232,7 +232,10 @@ export default function Tasks() {
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', `${name}.xlsx`)
+      link.setAttribute(
+        'download',
+        `${name + moment().format('_DD_MM_YYYY')}.xlsx`
+      )
       document.body.appendChild(link)
       link.click()
       link.remove()

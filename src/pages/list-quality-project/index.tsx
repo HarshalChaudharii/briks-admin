@@ -11,11 +11,11 @@ import {
 } from '@/components/ui/table'
 import './pagination.css'
 import { Card, CardFooter } from '@/components/ui/card'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { privateGetRequest } from '@/api/apiFunctions'
-import { GET_ALL_QUALITY_PROJECTS } from '@/api/apiUrl'
+import { BASE_URL, GET_ALL_QUALITY_PROJECTS } from '@/api/apiUrl'
 import { useState } from 'react'
-import { ArrowUp, SearchIcon } from 'lucide-react'
+import { ArrowDown, ArrowUp, SearchIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
@@ -28,6 +28,10 @@ import { Button } from '@/components/ui/button'
 import ReactPaginate from 'react-paginate'
 import { EyeOpenIcon } from '@radix-ui/react-icons'
 import { Link } from 'react-router-dom'
+import Cookies from 'js-cookie'
+import axios from 'axios'
+import { toast } from 'sonner'
+import moment from 'moment'
 
 const index = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -62,6 +66,59 @@ const index = () => {
   const handlePageChange = ({ selected }: { selected: number }): void => {
     setCurrentPage(selected + 1)
   }
+  const { mutate: downloadExcel, isLoading } = useMutation({
+    mutationFn: async ({ id, name }: { id: number; name: string }) => {
+      const token = Cookies.get('token')
+      try {
+        const response = await axios.get(
+          `${BASE_URL}/quality-projects/download-quality-excel/${id}`,
+          {
+            responseType: 'blob',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        console.log('Response received:', response)
+        if (response.data.size === 0) {
+          throw new Error('Empty file received')
+        }
+        return { data: response.data, name }
+      } catch (error) {
+        console.error('Download error:', error)
+        throw error
+      }
+    },
+    onSuccess: ({ data, name }) => {
+      try {
+        const blob = new Blob([data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        })
+        if (blob.size === 0) {
+          throw new Error('Empty blob created')
+        }
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute(
+          'download',
+          `${name + moment().format('_DD_MM_YYYY')}.xlsx`
+        )
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error('File processing error:', error)
+        toast.error('Error processing the file')
+      }
+    },
+    onError: (error) => {
+      console.error('Mutation error:', error)
+      toast.error('Failed to download excel file')
+    },
+  })
+
   return (
     <Layout>
       <Layout.Header>
@@ -125,6 +182,7 @@ const index = () => {
                 <TableHead>ID</TableHead>
                 <TableHead>Project</TableHead>
                 <TableHead>View</TableHead>
+                <TableHead>Download</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -136,6 +194,24 @@ const index = () => {
                     <Link to={`/quality-project/${item.id}`} className='mr-2'>
                       <EyeOpenIcon className='h-6 w-6 text-muted-foreground' />
                     </Link>
+                  </TableCell>
+                  <TableCell className='py-2'>
+                    <Button
+                      onClick={() =>
+                        downloadExcel({ id: item.id, name: item.name })
+                      }
+                      disabled={isLoading}
+                      size='sm'
+                      variant='ghost'
+                      className='h-8'
+                    >
+                      {
+                        <div className='flex items-center gap-2'>
+                          <ArrowDown className='h-4 w-4' />{' '}
+                          <span>Donwnlod Excel</span>
+                        </div>
+                      }
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
